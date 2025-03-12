@@ -45,3 +45,13 @@ input[type="range"] {
 #periodSelection label {
     margin-right: 10px;
 }
+
+#periodSelectionContainer {
+    margin: 10px 0;
+    text-align: center;
+}
+
+#periodSlider {
+    width: 50%;
+    margin: 5px;
+}
