@@ -2,7 +2,7 @@
 
 
 // Chemin des fichiers GNSS
-$folderPath = "250226_MODELTIME_GNSSPELEE/";
+$folderPath = "Fichiers_stations/";
 $files = glob($folderPath . "*.txt");
 
 // Position du Piton de la Fournaise (Réunion)

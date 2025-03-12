@@ -57,8 +57,15 @@ function updateVectors(index) {
         let endPoint = [startPoint[0] + dN/1000, startPoint[1] + dE/1000];
 
         // Ajouter le vecteur GNSS
-        L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer);
 
+        if (dU < 0) 
+            L.polyline([startPoint, endPoint], { color: "blue" }).addTo(vectorLayer);
+
+        if (dU == 0)
+            L.polyline([startPoint, endPoint], { color: "black" }).addTo(vectorLayer);
+
+        if (dU > 0)
+            L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer);
         // Ajouter un cercle d'erreur autour du point final
         let errorRadius = Math.sqrt(s_dE ** 2 + s_dN ** 2) ;
         L.circle(endPoint, {
@@ -87,3 +94,4 @@ periodRadios.forEach(radio => {
 
 // Charger les données au démarrage
 loadGNSSData();
+
