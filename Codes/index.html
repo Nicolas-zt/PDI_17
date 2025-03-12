@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualisation GNSS</title>
     
-    
     <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
     
     <!-- Leaflet.js -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
 </head>
 <body>
 
@@ -32,8 +32,10 @@
             <label for="period365">365 jours</label>
         </div>
 
-        <!-- Carte Leaflet -->
-        <div id="map"></div>
+        <!-- Carte Leaflet pour les vecteurs horizontaux -->
+        <div id="map" style="height:400px;"></div>
+        <!-- Nouvelle carte Leaflet pour les vecteurs verticaux -->
+        <div id="verticalMap" style="height:400px; margin-top:20px;"></div>
     </div>
 
     <script src="script.js"></script>
