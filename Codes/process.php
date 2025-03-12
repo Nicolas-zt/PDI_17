@@ -1,6 +1,5 @@
 <?php
 
-
 // Chemin des fichiers GNSS
 $folderPath = "../Fichiers_stations/";
 $files = glob($folderPath . "*.txt");
@@ -10,17 +9,19 @@ $volcanoLat = -21.2449;
 $volcanoLon = 55.7089;
 $radius = 0.1; // Rayon des stations autour du volcan (~10 km)
 
-// Répartir les stations en cercle 
+// Répartition des stations en cercle
 $stationPositions = [];
 $numStations = count($files);
 $angleStep = 360 / max($numStations, 1);
 
+// Stockage des données
 $results = [];
+$periods = [];  // Stocker dynamiquement les périodes disponibles
 
 foreach ($files as $index => $file) {
     $fileName = basename($file);
 
-    // Calcul de la position en cercle autour du volcan pour les satitons GNSS a modifier plus tard
+    // Calcul de la position en cercle autour du volcan
     $angle = deg2rad($index * $angleStep);
     $latOffset = $radius * cos($angle);
     $lonOffset = $radius * sin($angle);
@@ -31,35 +32,52 @@ foreach ($files as $index => $file) {
     ];
 
     $fileContent = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    
+
+    // Lire les périodes depuis l’en-tête
+    foreach ($fileContent as $line) {
+        if (strpos($line, "Time period") !== false) {
+            preg_match('/#\s+Time period #(\d+) = (\d+) days/', $line, $matches);
+            if ($matches) {
+                $periods[$matches[1]] = $matches[2]; // Ex: $periods["1"] = "90"
+            }
+        }
+        if (strpos($line, "yyyy mm dd") !== false) {
+            $columnNames = preg_split('/\s+/', trim($line));
+            break; // Fin de l’en-tête
+        }
+    }
+
+    // Lire les données GNSS
     foreach ($fileContent as $line) {
         if (strpos($line, "#") === 0) continue; // Ignorer les commentaires
-        
+
         $values = preg_split('/\s+/', trim($line));
-        if (count($values) <18) continue;
+        if (count($values) < count($columnNames)) continue;
 
-        list($year, $month, $day, $hour, $minute, $second,
-            $dE_1, $dN_1, $dU_1, $s_dE_1, $s_dN_1, $s_dU_1,
-            $dE_2, $dN_2, $dU_2, $s_dE_2, $s_dN_2, $s_dU_2) = $values;
-
+        list($year, $month, $day, $hour, $minute, $second) = array_slice($values, 0, 6);
         $date = sprintf("%04d-%02d-%02d", $year, $month, $day);
 
         if (!isset($results[$date])) {
             $results[$date] = [];
         }
 
+        $vectors = [];
+        foreach ($periods as $periodKey => $days) {
+            $indexOffset = 6 + ($periodKey - 1) * 6;
+            $vectors[$days] = [
+                "vector" => array_map('floatval', array_slice($values, $indexOffset, 3)),
+                "error"  => array_map('floatval', array_slice($values, $indexOffset + 3, 3))
+            ];
+        }
+
         $results[$date][$fileName] = [
-            "vector_1" => [(float)$dE_1, (float)$dN_1, (float)$dU_1],
-            "error_1" => [(float)$s_dE_1, (float)$s_dN_1, (float)$s_dU_1],
-            "vector_2" => [(float)$dE_2, (float)$dN_2, (float)$dU_2],
-            "error_2" => [(float)$s_dE_2, (float)$s_dN_2, (float)$s_dU_2],
+            "vectors" => $vectors,
             "position" => $stationPositions[$fileName]
         ];
     }
 }
 
-echo json_encode($results);
+// Retourner les périodes disponibles et les résultats
+echo json_encode(["periods" => $periods, "data" => $results]);
+
 ?>
-
-
-

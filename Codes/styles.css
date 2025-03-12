@@ -6,7 +6,6 @@ body {
     padding: 0;
 }
 
-
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -45,4 +44,14 @@ input[type="range"] {
 
 #periodSelection label {
     margin-right: 10px;
+}
+
+#periodSelectionContainer {
+    margin: 10px 0;
+    text-align: center;
+}
+
+#periodSlider {
+    width: 50%;
+    margin: 5px;
 }

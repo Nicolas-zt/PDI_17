@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualisation GNSS</title>
-    
-    <!-- CSS -->
+
+    <!-- Styles CSS -->
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Leaflet.js -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    
 </head>
 <body>
 
@@ -23,21 +22,20 @@
         <input type="range" id="dateSlider" min="0" max="10" step="1">
         <span id="selectedDate">Chargement...</span>
 
-        <!-- Sélection de la période -->
-        <div id="periodSelection">
-            <label>Période :</label>
-            <input type="radio" name="period" value="90" id="period90" checked> 
-            <label for="period90">90 jours</label>
-            <input type="radio" name="period" value="365" id="period365"> 
-            <label for="period365">365 jours</label>
+        <!-- Slider de période -->
+        <div id="periodSelectionContainer">
+            <label for="periodSlider">Période :</label>
+            <input type="range" id="periodSlider" min="0" max="1" step="1">
+            <span id="selectedPeriodLabel">Chargement...</span>
         </div>
 
         <!-- Carte Leaflet pour les vecteurs horizontaux -->
         <div id="map" style="height:400px;"></div>
-        <!-- Nouvelle carte Leaflet pour les vecteurs verticaux -->
+        <!-- Carte Leaflet pour les vecteurs verticaux -->
         <div id="verticalMap" style="height:400px; margin-top:20px;"></div>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
+
