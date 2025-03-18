@@ -5,6 +5,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+
 let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
@@ -89,7 +90,11 @@ function updateVectors(dateIndex, periodIndex) {
         let endPoint = [startPoint[0] + vector[1] / 1000, startPoint[1] + vector[0] / 1000];
 
         // 🔴 Ajouter le vecteur horizontal
+
         L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer).arrowheads();
+
+
+
   
         // 🔵 Ajouter une ellipse d'erreur
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
@@ -99,6 +104,7 @@ function updateVectors(dateIndex, periodIndex) {
             color: "blue",
             fillOpacity: 0.3
         }).addTo(errorLayer);
+
 
         // ✅ Ajouter le vecteur vertical
         let verticalEndPoint = [startPoint[0] + vector[2] / 1000, startPoint[1]];
