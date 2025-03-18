@@ -84,14 +84,16 @@ function updateVectors(dateIndex, periodIndex) {
 
         // 🔴 Ajouter le vecteur horizontal
         L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer);
-
-        // 🔵 Ajouter un cercle d'erreur
-        let errorRadius = Math.sqrt(error[0] ** 2 + error[1] ** 2);
-        L.circle(endPoint, {
-            radius: errorRadius,
+  
+        // 🔵 Ajouter une ellipse d'erreur
+        let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
+        let errorRadiusY = Math.sqrt(error[1] ** 2); // Rayon de l'ellipse sur l'axe Y
+        
+        L.ellipse(endPoint, [errorRadiusX, errorRadiusY], 0, { // 0° pour l'angle par défaut
             color: "blue",
             fillOpacity: 0.3
         }).addTo(errorLayer);
+
 
         // ✅ Ajouter le vecteur vertical
         let verticalEndPoint = [startPoint[0] + vector[2] / 1000, startPoint[1]];
