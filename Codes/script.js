@@ -12,6 +12,13 @@ let stationMarkers = L.layerGroup().addTo(map);
 let verticalVectorLayer = L.layerGroup().addTo(map);
 let verticalStationMarkers = L.layerGroup().addTo(map);
 
+// 📌 Définition de l'icône personnalisée en forme de carré noir et plus petit
+let squareIcon = L.divIcon({
+    className: 'custom-square-icon',
+    iconSize: [8, 8],
+    html: '<div style="width:8px; height:8px; background:#000; border:1px solid #000;"></div>'
+});
+
 // 📌 Gestion des sliders
 let dateSlider = document.getElementById("dateSlider");
 let periodSlider = document.getElementById("periodSlider");
@@ -83,7 +90,11 @@ function updateVectors(dateIndex, periodIndex) {
         let endPoint = [startPoint[0] + vector[1] / 1000, startPoint[1] + vector[0] / 1000];
 
         // 🔴 Ajouter le vecteur horizontal
-        L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer);
+
+        L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer).arrowheads();
+
+
+
   
         // 🔵 Ajouter une ellipse d'erreur
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
@@ -97,10 +108,16 @@ function updateVectors(dateIndex, periodIndex) {
 
         // ✅ Ajouter le vecteur vertical
         let verticalEndPoint = [startPoint[0] + vector[2] / 1000, startPoint[1]];
-        L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer);
+        L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
 
-        L.marker(startPoint).addTo(stationMarkers).bindPopup(`<b>Station:</b> ${station}`);
-        L.marker(startPoint).addTo(verticalStationMarkers).bindPopup(`<b>Station:</b> ${station}`);
+        // 🔲 Ajouter un marqueur carré noir aux emplacements des stations GNSS
+        L.marker(startPoint, { icon: squareIcon })
+            .addTo(stationMarkers)
+            .bindPopup(`<b>Station:</b> ${station}`);
+
+        L.marker(startPoint, { icon: squareIcon })
+            .addTo(verticalStationMarkers)
+            .bindPopup(`<b>Station:</b> ${station}`);
     }
 }
 
