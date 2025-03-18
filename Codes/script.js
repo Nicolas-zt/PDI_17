@@ -55,6 +55,17 @@ function loadGNSSData() {
         });
 }
 
+function metersToLatLon(lat, lon, deltaE, deltaN) {
+    const earthRadius = 6371000; // Rayon de la Terre en mètres
+    const deltaLat = deltaN / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
+    const deltaLon = deltaE / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
+
+    return {
+        lat: lat + deltaLat,
+        lon: lon + deltaLon
+    };
+}
+
 // 📌 Mettre à jour les vecteurs
 function updateVectors(dateIndex, periodIndex) {
     let selectedDate = dates[dateIndex];
@@ -87,7 +98,8 @@ function updateVectors(dateIndex, periodIndex) {
         if (!vector) continue;
 
         let startPoint = [position.lat, position.lon];
-        let endPoint = [startPoint[0] + vector[1] / 1000, startPoint[1] + vector[0] / 1000];
+        let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
+
 
         // 🔴 Ajouter le vecteur horizontal
 
@@ -107,7 +119,7 @@ function updateVectors(dateIndex, periodIndex) {
 
 
         // ✅ Ajouter le vecteur vertical
-        let verticalEndPoint = [startPoint[0] + vector[2] / 1000, startPoint[1]];
+        let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]);
         L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
 
         L.marker(startPoint, { icon: squareIcon })
