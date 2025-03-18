@@ -110,8 +110,13 @@ function updateVectors(dateIndex, periodIndex) {
         let verticalEndPoint = [startPoint[0] + vector[2] / 1000, startPoint[1]];
         L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
 
-        L.marker(startPoint).addTo(stationMarkers).bindPopup(`<b>Station:</b> ${station}`);
-        L.marker(startPoint).addTo(verticalStationMarkers).bindPopup(`<b>Station:</b> ${station}`);
+        L.marker(startPoint, { icon: squareIcon })
+            .addTo(stationMarkers)
+            .bindPopup(`<b>Station:</b> ${station}`);
+
+        L.marker(startPoint, { icon: squareIcon })
+            .addTo(verticalStationMarkers)
+            .bindPopup(`<b>Station:</b> ${station}`);
     }
 }
 
