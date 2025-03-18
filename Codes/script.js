@@ -84,7 +84,7 @@ function updateVectors(dateIndex, periodIndex) {
 
         // 🔴 Ajouter le vecteur horizontal
         L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer);
-  
+    
         // 🔵 Ajouter une ellipse d'erreur
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
         let errorRadiusY = Math.sqrt(error[1] ** 2); // Rayon de l'ellipse sur l'axe Y
@@ -100,7 +100,7 @@ function updateVectors(dateIndex, periodIndex) {
         L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer);
 
         L.marker(startPoint).addTo(stationMarkers).bindPopup(`<b>Station:</b> ${station}`);
-        L.marker(startPoint).addTo(verticalStationMarkers).bindPopup(`<b>Station:</b> ${station}`);
+        
     }
 }
 
