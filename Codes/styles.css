@@ -55,3 +55,19 @@ input[type="range"] {
     width: 50%;
     margin: 5px;
 }
+
+
+.custom-scale {
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #ccc;
+    padding: 5px;
+    font-size: 12px;
+    position: relative;
+    width: 250px;
+  }
+  .scale-line {
+    height: 10px;
+    background-color: #000;
+    margin-top: 5px;
+    transition: width 0.2s; /* Smooth transition when resizing */
+  }

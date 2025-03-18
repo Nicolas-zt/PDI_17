@@ -10,14 +10,16 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(verticalMap);
 
-L.control.scale(maxWidth = 200,imperial = false).addTo(map);
+
+
+
 
 let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
 let verticalVectorLayer = L.layerGroup().addTo(verticalMap);
 let verticalStationMarkers = L.layerGroup().addTo(verticalMap);
-let scaleLayer = L.layerGroup().addTo(map)
+let scaleLayer = L.layerGroup().addTo(map);
 
 
 // 📌 Gestion des sliders
@@ -32,6 +34,43 @@ let gnssData = [];
 let dates = [];
 let availablePeriods = [];
 let echelles = [];
+// 📌 Gestion de l'echelle
+
+
+function getScaleLength(zoomLevel) {
+    // Exemple : 1 km à zoom = 13, ajustez les facteurs selon vos besoins
+    var baseLength = 100; // longueur de base du segment en pixels (1 km)
+    var zoomFactor = Math.pow(2, 13 - zoomLevel); // Factorisation basée sur le zoom (plus le zoom est grand, plus le segment est court)
+    return baseLength * zoomFactor;
+  }
+
+var CustomScale = L.Control.extend({
+    onAdd: function(map) {
+      var div = L.DomUtil.create('div', 'custom-scale');
+      var scaleLength = getScaleLength(map.getZoom());
+      div.innerHTML = "<strong>Échelle :</strong> 1 km = 10 cm";
+
+
+      var scaleLine = L.DomUtil.create('div', 'scale-line');
+        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        
+        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
+
+        // Écouter les changements de zoom pour mettre à jour l'échelle
+        map.on('zoomend', function() {
+          var scaleLength = getScaleLength(map.getZoom());
+          scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
+        });
+
+
+      return div;
+    }
+  });
+
+  // Ajout du contrôle personnalisé à la carte
+  map.addControl(new CustomScale({ position: 'bottomleft' }));
+
+
 
 // 📌 Chargement des données GNSS
 function loadGNSSData() {
@@ -107,7 +146,7 @@ function updateVectors(dateIndex, periodIndex) {
 
 // 📌 Mettre à jour l'echelle
 function updateScale(scale) {
-    
+
 }
 
 // 📌 Gestion des sliders
@@ -120,8 +159,8 @@ periodSlider.addEventListener("input", function () {
 });
 
 scaleSlider.addEventListener("input", function () {
-    updateVectors
-})
+    updateScale(scaleSlider.value);
+});
 
 // 📌 Charger les données au démarrage
 loadGNSSData();
