@@ -9,8 +9,17 @@
     <link rel="stylesheet" href="styles.css">
 
     <!-- Leaflet.js -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-ellipse@0.9.1/l.ellipse.js"></script>
+
+
+    
+    <script src="leaflet.geometryutil.js"></script>
+    <script src="leaflet-arrowheads.js"></script>
+
+   
+    
 </head>
 <body>
 
@@ -18,9 +27,9 @@
         <h2>Visualisation GNSS</h2>
 
         <!-- Slider de date -->
-        <label for="dateSlider">Date :</label>
+        <label for="dateSlider" id="dateLabel">Date :</label>
         <input type="range" id="dateSlider" min="0" max="10" step="1">
-        <span id="selectedDate">Chargement...</span>
+        
 
         <!-- Slider de période -->
         <div id="periodSelectionContainer">
@@ -29,13 +38,11 @@
             <span id="selectedPeriodLabel">Chargement...</span>
         </div>
 
-        <!-- Carte Leaflet pour les vecteurs horizontaux -->
+        <!-- Carte Leaflet pour les vecteurs  -->
         <div id="map" style="height:400px;"></div>
-        <!-- Carte Leaflet pour les vecteurs verticaux -->
-        <div id="verticalMap" style="height:400px; margin-top:20px;"></div>
+      
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
-
