@@ -10,21 +10,28 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(verticalMap);
 
+L.control.scale(maxWidth = 200,imperial = false).addTo(map);
+
 let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
 let verticalVectorLayer = L.layerGroup().addTo(verticalMap);
 let verticalStationMarkers = L.layerGroup().addTo(verticalMap);
+let scaleLayer = L.layerGroup().addTo(map)
+
 
 // 📌 Gestion des sliders
 let dateSlider = document.getElementById("dateSlider");
 let periodSlider = document.getElementById("periodSlider");
+let scaleSlider = document.getElementById("scaleSlider");
 let selectedDateDisplay = document.getElementById("selectedDate");
 let selectedPeriodLabel = document.getElementById("selectedPeriodLabel");
+let selectedScale = document.getElementById("selectedScale");
 
 let gnssData = [];
 let dates = [];
 let availablePeriods = [];
+let echelles = [];
 
 // 📌 Chargement des données GNSS
 function loadGNSSData() {
@@ -97,6 +104,12 @@ function updateVectors(dateIndex, periodIndex) {
     }
 }
 
+
+// 📌 Mettre à jour l'echelle
+function updateScale(scale) {
+    
+}
+
 // 📌 Gestion des sliders
 dateSlider.addEventListener("input", function () {
     updateVectors(this.value, periodSlider.value);
@@ -105,6 +118,10 @@ dateSlider.addEventListener("input", function () {
 periodSlider.addEventListener("input", function () {
     updateVectors(dateSlider.value, this.value);
 });
+
+scaleSlider.addEventListener("input", function () {
+    updateVectors
+})
 
 // 📌 Charger les données au démarrage
 loadGNSSData();
