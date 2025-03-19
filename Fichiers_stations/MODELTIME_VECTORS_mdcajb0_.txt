@@ -1,18 +1,24 @@
 ################################################################################
-# WEBOBS Observatoires volcanologiques et sismologiques de l'IPGP
+# WEBOBS DEV-MARENGO
 #
-# PROC: {PROC.GNSSPELEE} 
-# TITLE: {\fontsize{14}{\bfGNSS PelÈe Martinique - Source best model timeline} ()} {GNSSPELEE_MODELTIME_VECTORS}
-# FILENAME: MODELTIME_VECTORS_mdcajb0_.txt
-# TIMESPAN: from "01-Feb-2020" to "01-Mar-2025"
+# PROC: {PROC.GNSSSOUF} GNSS Soufrière
+# TITLE: {\fontsize{14}{\bfGNSS Soufrière - Source best model timeline} (1 year)} {GNSSSOUF_MODELTIME_VECTORS}
+# FILENAME: MODELTIME_VECTORS_gdcamc0_01y.txt
+# TIMESPAN: from "18-Mar-2024 20:48:33" to "18-Mar-2025 20:48:33"
 #
-#   Time period #1 = 90 days (~3 months)
-#   Time period #2 = 180 days (~6 months)
-#   Time period #3 = 270 days (~1 year)
-#   Time period #4 = 365 days (1 year)
+# NODE_FID: AMC0
+# NODE_NAME: "Morne Amic"
+# NODE_LATITUDE: -21.2449
+# NODE_LONGITUDE: 55.7089
+# NODE_ELEVATION: 1357.00
+# NODE_URL: /cgi-bin/showNODE.pl?node=PROC.GNSSSOUF.GDCAMC0
+# TIME_PERIODS: 90,180,270,365
 #
-# CREATED: 12-Mar-2025 11:07:25 by webobs@volwebobs.ipgp.fr
-# COPYRIGHT: MMXXV, OVSM-IPGP
+#   Time period #1 = 30 days (~1 month)
+#   Time period #2 = 15 days (15 days)
+#
+# CREATED: 18-Mar-2025 21:49:04 by beaudu@marengo.local
+# COPYRIGHT: MMXXV, 
 ################################################################################
 #
 #yyyy mm dd HH MM SS dE_(mm)_1 dN_(mm)_1 dU_(mm)_1 s_dE_1 s_dN_1 s_dU_1 dE_(mm)_2 dN_(mm)_2 dU_(mm)_2 s_dE_2 s_dN_2 s_dU_2 dE_(mm)_3 dN_(mm)_3 dU_(mm)_3 s_dE_3 s_dN_3 s_dU_3 dE_(mm)_4 dN_(mm)_4 dU_(mm)_4 s_dE_4 s_dN_4 s_dU_4

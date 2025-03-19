@@ -29,6 +29,7 @@ let dateLabel = document.getElementById('dateLabel');
 let gnssData = [];
 let dates = [];
 let availablePeriods = [];
+let stationsInfo = [];
 
 // 📌 Chargement des données GNSS
 function loadGNSSData() {
@@ -36,6 +37,7 @@ function loadGNSSData() {
         .then(response => response.json())
         .then(data => {
             gnssData = data.data;
+            stationsInfo = data.stations;
             dates = Object.keys(gnssData).sort();
             availablePeriods = Object.values(data.periods);
 
@@ -90,9 +92,17 @@ function updateVectors(dateIndex, periodIndex) {
     verticalVectorLayer.clearLayers();
     verticalStationMarkers.clearLayers();
 
-    for (let station in stationsData) {
-        let stationData = stationsData[station];
-        let position = stationData.position;
+    for (let stationFileName in stationsData) {
+        let stationData = stationsData[stationFileName];
+        let stationInfo = stationsInfo[stationFileName]; // Récupérer les infos de la station depuis stationsInfo
+
+        if (!stationInfo) continue; // Si aucune info de station n'est trouvée, passer à la suivante
+
+        let position = {
+            lat: stationInfo.latitude,
+            lon: stationInfo.longitude
+        };
+
         let { vector, error } = stationData.vectors[selectedPeriod] || {};
 
         if (!vector) continue;
@@ -124,11 +134,11 @@ function updateVectors(dateIndex, periodIndex) {
 
         L.marker(startPoint, { icon: squareIcon })
             .addTo(stationMarkers)
-            .bindPopup(`<b>Station:</b> ${station}`);
-
-        L.marker(startPoint, { icon: squareIcon })
-            .addTo(verticalStationMarkers)
-            .bindPopup(`<b>Station:</b> ${station}`);
+            .bindPopup(`
+                <b>Station:</b> ${stationInfo.name}<br>
+                <b>Code:</b> ${stationInfo.code}<br>
+                <b>URL:</b> <a href="${stationInfo.url}" target="_blank">${stationInfo.url}</a>
+            `);
     }
 }
 
