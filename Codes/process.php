@@ -4,48 +4,50 @@
 $folderPath = "../Fichiers_stations/";
 $files = glob($folderPath . "*.txt");
 
-// Position du Piton de la Fournaise (Réunion)
-$volcanoLat = -21.2449;
-$volcanoLon = 55.7089;
-$radius = 0.1; // Rayon des stations autour du volcan (~10 km)
-
-// Répartition des stations en cercle
-$stationPositions = [];
-$numStations = count($files);
-$angleStep = 360 / max($numStations, 1);
-
 // Stockage des données
 $results = [];
-$periods = [];  // Stocker dynamiquement les périodes disponibles
+$stationInfo = []; // Informations des stations
+$periods = [];     // Stocker dynamiquement les périodes disponibles
 
-foreach ($files as $index => $file) {
+foreach ($files as $file) {
     $fileName = basename($file);
-
-    // Calcul de la position en cercle autour du volcan
-    $angle = deg2rad($index * $angleStep);
-    $latOffset = $radius * cos($angle);
-    $lonOffset = $radius * sin($angle);
-
-    $stationPositions[$fileName] = [
-        "lat" => $volcanoLat + $latOffset,
-        "lon" => $volcanoLon + $lonOffset
-    ];
-
     $fileContent = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-    // Lire les périodes depuis l’en-tête
+    // Variables pour stocker les informations de l'en-tête
+    $nodeCode = $nodeName = $nodeUrl = null;
+    $nodeLat = $nodeLon = $nodeElevation = null;
+
+    // Lire l'en-tête
     foreach ($fileContent as $line) {
-        if (strpos($line, "Time period") !== false) {
-            preg_match('/#\s+Time period #(\d+) = (\d+) days/', $line, $matches);
-            if ($matches) {
-                $periods[$matches[1]] = $matches[2]; // Ex: $periods["1"] = "90"
-            }
-        }
-        if (strpos($line, "yyyy mm dd") !== false) {
+        if (strpos($line, "NODE_FID:") !== false) {
+            $nodeCode = trim(explode(":", $line, 2)[1]);
+        } elseif (strpos($line, "NODE_NAME:") !== false) {
+            $nodeName = trim(explode(":", $line, 2)[1], ' "');
+        } elseif (strpos($line, "NODE_LATITUDE:") !== false) {
+            $nodeLat = floatval(trim(explode(":", $line, 2)[1]));
+        } elseif (strpos($line, "NODE_LONGITUDE:") !== false) {
+            $nodeLon = floatval(trim(explode(":", $line, 2)[1]));
+        } elseif (strpos($line, "NODE_ELEVATION:") !== false) {
+            $nodeElevation = floatval(trim(explode(":", $line, 2)[1]));
+        } elseif (strpos($line, "NODE_URL:") !== false) {
+            $nodeUrl = trim(explode(":", $line, 2)[1]);
+        } elseif (strpos($line, "TIME_PERIODS:") !== false) {
+            $periods = array_map('intval', explode(',', trim(explode(":", $line, 2)[1])));
+        } elseif (strpos($line, "yyyy mm dd") !== false) {
             $columnNames = preg_split('/\s+/', trim($line));
-            break; // Fin de l’en-tête
+            break; // Fin de l'en-tête
         }
     }
+
+    // Stocker les informations de la station
+    $stationInfo[$fileName] = [
+        "code" => $nodeCode,
+        "name" => $nodeName,
+        "latitude" => $nodeLat,
+        "longitude" => $nodeLon,
+        "elevation" => $nodeElevation,
+        "url" => $nodeUrl
+    ];
 
     // Lire les données GNSS
     foreach ($fileContent as $line) {
@@ -62,8 +64,8 @@ foreach ($files as $index => $file) {
         }
 
         $vectors = [];
-        foreach ($periods as $periodKey => $days) {
-            $indexOffset = 6 + ($periodKey - 1) * 6;
+        foreach ($periods as $index => $days) {
+            $indexOffset = 6 + $index * 6;
             $vectors[$days] = [
                 "vector" => array_map('floatval', array_slice($values, $indexOffset, 3)),
                 "error"  => array_map('floatval', array_slice($values, $indexOffset + 3, 3))
@@ -72,12 +74,20 @@ foreach ($files as $index => $file) {
 
         $results[$date][$fileName] = [
             "vectors" => $vectors,
-            "position" => $stationPositions[$fileName]
+            "position" => [
+                "lat" => $nodeLat,
+                "lon" => $nodeLon,
+                "elevation" => $nodeElevation
+            ]
         ];
     }
 }
 
-// Retourner les périodes disponibles et les résultats
-echo json_encode(["periods" => $periods, "data" => $results]);
+// Retourner les informations des stations, les périodes disponibles et les résultats
+echo json_encode([
+    "stations" => $stationInfo,
+    "periods" => $periods,
+    "data" => $results
+]);
 
 ?>
