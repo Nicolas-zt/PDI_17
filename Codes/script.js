@@ -10,7 +10,7 @@ let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
 let verticalVectorLayer = L.layerGroup().addTo(map);
-let verticalStationMarkers = L.layerGroup().addTo(map);
+
 
 // 📌 Définition de l'icône personnalisée en forme de carré noir et plus petit
 let squareIcon = L.divIcon({
@@ -90,7 +90,7 @@ function updateVectors(dateIndex, periodIndex) {
     errorLayer.clearLayers();
     stationMarkers.clearLayers();
     verticalVectorLayer.clearLayers();
-    verticalStationMarkers.clearLayers();
+
 
     for (let stationFileName in stationsData) {
         let stationData = stationsData[stationFileName];
@@ -114,8 +114,6 @@ function updateVectors(dateIndex, periodIndex) {
         // 🔴 Ajouter le vecteur horizontal
 
         L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer).arrowheads();
-
-
 
   
         // 🔵 Ajouter une ellipse d'erreur
