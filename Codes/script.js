@@ -140,6 +140,40 @@ function updateVectors(dateIndex, periodIndex) {
     }
 }
 
+let toggleHorizontalButton = document.getElementById("toggleHorizontal");
+toggleHorizontalButton.addEventListener("click", function(){
+    if (map.hasLayer(vectorLayer)) {
+      map.removeLayer(vectorLayer);
+      map.removeLayer(errorLayer);
+      
+        
+        
+        toggleHorizontalButton.textContent = "Afficher vecteurs horizontaux";
+    } else {
+      map.addLayer(vectorLayer);
+      map.addLayer(stationMarkers);
+      map.addLayer(errorLayer);
+        
+        toggleHorizontalButton.textContent = "Masquer vecteurs horizontaux";
+    }
+});
+
+
+let toggleVerticalButton = document.getElementById("toggleVertical");
+toggleVerticalButton.addEventListener("click", function(){
+    if (map.hasLayer(verticalVectorLayer)) {
+        map.removeLayer(verticalVectorLayer);
+        
+        
+        toggleVerticalButton.textContent = "Afficher vecteurs verticaux";
+    } else {
+        map.addLayer(verticalVectorLayer);
+        map.addLayer(stationMarkers);
+        toggleVerticalButton.textContent = "Masquer vecteurs verticaux";
+    }
+});
+
+
 // 📌 Gestion des sliders
 dateSlider.addEventListener("input", function () {
     updateVectors(this.value, periodSlider.value);
