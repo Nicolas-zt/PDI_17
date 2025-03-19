@@ -5,7 +5,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-
+L.control.scale({imperial : false}).addTo(map)
 
 
 
@@ -67,16 +67,104 @@ function loadGNSSData() {
         });
 }
 
+// 📌 Gestion de l'echelle
+
+scaleSlider.min = 0 
+scaleSlider.max = 10
+scaleSlider.value = 5
+
+function getScaleLength(zoomLevel,baseLength) {
+    // Exemple : 1 km à zoom = 13, ajustez les facteurs selon vos besoins
+    //var baseLength = 100; longueur de base du segment en pixels (1 km)
+    var zoomFactor = Math.pow(2, 13 - zoomLevel); // Factorisation basée sur le zoom (plus le zoom est grand, plus le segment est court)
+    return baseLength * zoomFactor;
+  }
+
+var CustomScale = L.Control.extend({
+    onAdd: function(map) {
+      let div = L.DomUtil.create('div', 'custom-scale');
+      let scaleLength = getScaleLength(map.getZoom(),100);
+      div.innerHTML = "<strong>Échelle :</strong> ";
+
+
+      let scaleLine = L.DomUtil.create('div', 'scale-line');
+        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        
+        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
+
+        // Écouter les changements de zoom pour mettre à jour l'échelle
+        map.on('zoomend', function() {
+          let scaleLength = getScaleLength(map.getZoom(),scaleSlider.value*10);
+          scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
+          console.log(map.getScaleZoom());
+        });
+
+
+      return div;
+    },
+
+    onRemove: function (map) {
+
+    }
+  });
+
+
+  // Ajout du contrôle personnalisé à la carte
+    let CustomScaleControl = new CustomScale({ position: 'bottomleft' })
+    map.addControl(CustomScaleControl);
+
+
+// 📌 Mettre à jour l'echelle
+function updateScale(scale) {
+
+    map.removeControl(CustomScaleControl);
+    
+
+    selectedScale.textContent = `${scale}`;
+
+    // création d'un control 
+    CustomScale = L.Control.extend({
+        onAdd: function(map) {
+        let div = L.DomUtil.create('div', 'custom-scale');
+        let scaleLength = getScaleLength(map.getZoom(),scale*10);
+        div.innerHTML = "<strong>Échelle :</strong> ";
+    
+    
+        let scaleLine = L.DomUtil.create('div', 'scale-line');
+        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        
+        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
+
+        // Écouter les changements de zoom pour mettre à jour l'échelle
+        map.on('zoomend', function() {
+            let scaleLength = getScaleLength(map.getZoom(),scale*10);
+            scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
+        });
+    
+    
+        return div;
+        }
+      });
+     
+      //Instanciation du control créé précédemment
+      CustomScaleControl = new CustomScale({ position: 'bottomleft' })
+
+      map.addControl(CustomScaleControl);
+
+      
+}
+
 function metersToLatLon(lat, lon, deltaE, deltaN) {
     const earthRadius = 6371000; // Rayon de la Terre en mètres
-    const deltaLat = deltaN / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
-    const deltaLon = deltaE / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
+    const deltaLat = deltaN *scaleSlider.value*10/ earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
+    const deltaLon = deltaE *scaleSlider.value*10/ (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
 
     return {
         lat: lat + deltaLat,
         lon: lon + deltaLon
     };
 }
+
 
 // 📌 Mettre à jour les vecteurs
 function updateVectors(dateIndex, periodIndex) {
@@ -145,90 +233,7 @@ function updateVectors(dateIndex, periodIndex) {
 }
 
 
-// 📌 Gestion de l'echelle
 
-scaleSlider.min = 0 
-scaleSlider.max = 10
-
-function getScaleLength(zoomLevel,baseLength) {
-    // Exemple : 1 km à zoom = 13, ajustez les facteurs selon vos besoins
-    //var baseLength = 100; longueur de base du segment en pixels (1 km)
-    var zoomFactor = Math.pow(2, 13 - zoomLevel); // Factorisation basée sur le zoom (plus le zoom est grand, plus le segment est court)
-    return baseLength * zoomFactor;
-  }
-
-var CustomScale = L.Control.extend({
-    onAdd: function(map) {
-      let div = L.DomUtil.create('div', 'custom-scale');
-      let scaleLength = getScaleLength(map.getZoom(),100);
-      div.innerHTML = "<strong>Échelle :</strong> 1 km = 10 cm";
-
-
-      let scaleLine = L.DomUtil.create('div', 'scale-line');
-        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
-        
-        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
-
-        // Écouter les changements de zoom pour mettre à jour l'échelle
-        map.on('zoomend', function() {
-          let scaleLength = getScaleLength(map.getZoom(),100);
-          scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
-        });
-
-
-      return div;
-    },
-
-    onRemove: function (map) {
-
-    }
-  });
-
-
-  // Ajout du contrôle personnalisé à la carte
-    let CustomScaleControl = new CustomScale({ position: 'bottomleft' })
-    map.addControl(CustomScaleControl);
-
-
-// 📌 Mettre à jour l'echelle
-function updateScale(scale) {
-
-    map.removeControl(CustomScaleControl);
-    
-
-    selectedScale.textContent = `${scale}`;
-
-    // création d'un control 
-    CustomScale = L.Control.extend({
-        onAdd: function(map) {
-        let div = L.DomUtil.create('div', 'custom-scale');
-        let scaleLength = getScaleLength(map.getZoom(),scale*10);
-        div.innerHTML = "<strong>Échelle :</strong> 1 km = 10 cm";
-    
-    
-        let scaleLine = L.DomUtil.create('div', 'scale-line');
-        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
-        
-        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
-
-        // Écouter les changements de zoom pour mettre à jour l'échelle
-        map.on('zoomend', function() {
-            let scaleLength = getScaleLength(map.getZoom(),scale*100);
-            scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
-        });
-    
-    
-        return div;
-        }
-      });
-     
-      //Instanciation du control créé précédemment
-      CustomScaleControl = new CustomScale({ position: 'bottomleft' })
-
-      map.addControl(CustomScaleControl);
-
-      
-}
 
 
 
@@ -246,6 +251,7 @@ periodSlider.addEventListener("input", function () {
 scaleSlider.addEventListener("input", function () {
    
     updateScale(this.value);
+    updateVectors(dateSlider.value,periodSlider.value);
 });
 
 // 📌 Charger les données au démarrage
