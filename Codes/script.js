@@ -151,43 +151,46 @@ var CustomScale = L.Control.extend({
   // Ajout du contrôle personnalisé à la carte
     let CustomScaleControl = new CustomScale({ position: 'bottomleft' })
     map.addControl(CustomScaleControl);
-    
-function removeCustomScale() {
-    map.removeControl(customScaleControl);
-}
+
 
 // 📌 Mettre à jour l'echelle
 function updateScale(scale) {
 
-    removeCustomScale();
+    map.removeControl(CustomScaleControl);
     
 
     selectedScale.textContent = `${scale}`;
-    let CustomScale = L.Control.extend({
+
+    // création d'un control 
+    CustomScale = L.Control.extend({
         onAdd: function(map) {
-          let div = L.DomUtil.create('div', 'custom-scale');
-          let scaleLength = getScaleLength(map.getZoom(),scale*100);
-          div.innerHTML = "<strong>Échelle :</strong> 1 km = 10 cm";
+        let div = L.DomUtil.create('div', 'custom-scale');
+        let scaleLength = getScaleLength(map.getZoom(),scale*10);
+        div.innerHTML = "<strong>Échelle :</strong> 1 km = 10 cm";
     
     
-          let scaleLine = L.DomUtil.create('div', 'scale-line');
-            scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
-            
-            div.appendChild(scaleLine); // Ajouter la ligne au contrôle
+        let scaleLine = L.DomUtil.create('div', 'scale-line');
+        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        
+        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
+
+        // Écouter les changements de zoom pour mettre à jour l'échelle
+        map.on('zoomend', function() {
+            let scaleLength = getScaleLength(map.getZoom(),scale*100);
+            scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
+        });
     
-            // Écouter les changements de zoom pour mettre à jour l'échelle
-            map.on('zoomend', function() {
-              let scaleLength = getScaleLength(map.getZoom(),scale*100);
-              scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
-            });
     
-    
-          return div;
+        return div;
         }
       });
      
-      let CustomScaleControl = new CustomScale({ position: 'bottomleft' })
+      //Instanciation du control créé précédemment
+      CustomScaleControl = new CustomScale({ position: 'bottomleft' })
+
       map.addControl(CustomScaleControl);
+
+      
 }
 
 
