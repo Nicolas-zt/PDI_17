@@ -69,34 +69,36 @@ function loadGNSSData() {
 
 // 📌 Gestion de l'echelle
 
-scaleSlider.min = 0 
-scaleSlider.max = 10
-scaleSlider.value = 5
+scaleSlider.min = 1 
+scaleSlider.max = 15
+scaleSlider.value = 1
 
 function getScaleLength(zoomLevel,baseLength) {
     // Exemple : 1 km à zoom = 13, ajustez les facteurs selon vos besoins
     //var baseLength = 100; longueur de base du segment en pixels (1 km)
     var zoomFactor = Math.pow(2, 13 - zoomLevel); // Factorisation basée sur le zoom (plus le zoom est grand, plus le segment est court)
-    return baseLength * zoomFactor;
+    return baseLength / zoomFactor;
   }
 
 var CustomScale = L.Control.extend({
     onAdd: function(map) {
       let div = L.DomUtil.create('div', 'custom-scale');
-      let scaleLength = getScaleLength(map.getZoom(),100);
-      div.innerHTML = "<strong>Échelle :</strong> ";
+      let scaleLength = getScaleLength(map.getZoom(),scaleSlider.value*6);
+      div.innerHTML = "<strong>Size of 10 millimeter :</strong> ";
 
 
       let scaleLine = L.DomUtil.create('div', 'scale-line');
-        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        scaleLine.style.width = scaleLength*10 + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        div.style.width = (scaleLength*10+20) + 'px';
         
         div.appendChild(scaleLine); // Ajouter la ligne au contrôle
 
         // Écouter les changements de zoom pour mettre à jour l'échelle
         map.on('zoomend', function() {
-          let scaleLength = getScaleLength(map.getZoom(),scaleSlider.value*10);
-          scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
-          console.log(map.getScaleZoom());
+          let scaleLength = getScaleLength(map.getZoom(),scaleSlider.value*6);
+          scaleLine.style.width = scaleLength*10 + 'px'; // Mettre à jour la longueur du segment
+          div.style.width = (scaleLength*10+20) + 'px';
+          console.log(map.getZoom());
         });
 
 
@@ -120,25 +122,28 @@ function updateScale(scale) {
     map.removeControl(CustomScaleControl);
     
 
-    selectedScale.textContent = `${scale}`;
+    selectedScale.textContent = `${'1 : '+scale+'00000'}`;
 
     // création d'un control 
     CustomScale = L.Control.extend({
         onAdd: function(map) {
         let div = L.DomUtil.create('div', 'custom-scale');
-        let scaleLength = getScaleLength(map.getZoom(),scale*10);
-        div.innerHTML = "<strong>Échelle :</strong> ";
+        let scaleLength = getScaleLength(map.getZoom(),scale*6);
+        div.innerHTML = "<strong>Size of 10 millimeter :</strong> ";
     
     
         let scaleLine = L.DomUtil.create('div', 'scale-line');
-        scaleLine.style.width = scaleLength + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        scaleLine.style.width = scaleLength*10 + 'px'; // La largeur du segment est définie par la fonction getScaleLength
+        div.style.width = (scaleLength*10+20) + 'px';
         
         div.appendChild(scaleLine); // Ajouter la ligne au contrôle
 
         // Écouter les changements de zoom pour mettre à jour l'échelle
         map.on('zoomend', function() {
-            let scaleLength = getScaleLength(map.getZoom(),scale*10);
-            scaleLine.style.width = scaleLength + 'px'; // Mettre à jour la longueur du segment
+            let scaleLength = getScaleLength(map.getZoom(),scale*6);
+            scaleLine.style.width = scaleLength*10 + 'px'; // Mettre à jour la longueur du segment
+            div.style.width = (scaleLength*10+20) + 'px';
+            console.log(map.getZoom());
         });
     
     
@@ -156,12 +161,12 @@ function updateScale(scale) {
 
 function metersToLatLon(lat, lon, deltaE, deltaN) {
     const earthRadius = 6371000; // Rayon de la Terre en mètres
-    const deltaLat = deltaN *scaleSlider.value*10/ earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
-    const deltaLon = deltaE *scaleSlider.value*10/ (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
+    const deltaLat = (deltaN/1000) / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
+    const deltaLon = (deltaE/1000) / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
 
     return {
-        lat: lat + deltaLat,
-        lon: lon + deltaLon
+        lat: lat + deltaLat*1000*scaleSlider.value*100,
+        lon: lon + deltaLon*1000*scaleSlider.value*100
     };
 }
 

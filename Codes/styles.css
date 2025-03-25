@@ -63,11 +63,13 @@ input[type="range"] {
     padding: 5px;
     font-size: 12px;
     position: relative;
-    width: 250px;
+    min-width: 130px;
   }
   .scale-line {
     height: 10px;
-    background-color: #000;
+    background-color: #ffc8c8;
+    border : 1px solid rgb(84, 0, 0) ;
+    border-top : none;
     margin-top: 5px;
-    transition: width 0.2s; /* Smooth transition when resizing */
+    transition: width 0.5s; /* Smooth transition when resizing */
   }
