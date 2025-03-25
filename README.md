@@ -13,8 +13,12 @@ Le troisième slider permet de modifier l'échelle des vecteurs (qui est différ
 signifie que le vecteur est représenté 100000 fois plus grand que ce qu'il est vraiment.
 
 ## Vecteurs
+Par défaut les vecteurs horizontaux et verticaux sont affichés
+
 Les vecteurs rouges correspondent aux déformations horizontales et sont accompagnés d'une ellipse d'erreur de la même couleur.
 Les vecteurs verts correspondent aux déformations verticales et sont accompagnés d'un cercle d'erreur de la même couleur.
+
+En dessous de la carte un bouton permet de cacher/afficher les vecteurs horizontaux, de même pour les vecteurs verticaux.
 
 ## Echelles
 
