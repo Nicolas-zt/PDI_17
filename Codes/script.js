@@ -5,12 +5,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-
 let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
 let verticalVectorLayer = L.layerGroup().addTo(map);
-
+let verticalErrorLayer = L.layerGroup().addTo(map); // Nouveau calque pour l'erreur verticale
 
 // 📌 Définition de l'icône personnalisée en forme de carré noir et plus petit
 let squareIcon = L.divIcon({
@@ -81,8 +80,8 @@ function updateVectors(dateIndex, periodIndex) {
     startDate.setDate(endDate.getDate() - Number(selectedPeriod));
 
     // Mettre à jour l'affichage
-    dateLabel.textContent = `Date de début : ${startDate.toISOString().split('T')[0]} - Date de fin : ${selectedDate}`;
-    selectedPeriodLabel.textContent = `${selectedPeriod} jours`;
+    dateLabel.textContent = `Start Date : ${startDate.toISOString().split('T')[0]} - End Date : ${selectedDate}`;
+    selectedPeriodLabel.textContent = `${selectedPeriod} Days`;
 
     let stationsData = gnssData[selectedDate];
 
@@ -90,7 +89,7 @@ function updateVectors(dateIndex, periodIndex) {
     errorLayer.clearLayers();
     stationMarkers.clearLayers();
     verticalVectorLayer.clearLayers();
-
+    verticalErrorLayer.clearLayers(); // Nettoyer le calque des erreurs verticales
 
     for (let stationFileName in stationsData) {
         let stationData = stationsData[stationFileName];
@@ -110,26 +109,32 @@ function updateVectors(dateIndex, periodIndex) {
         let startPoint = [position.lat, position.lon];
         let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
 
-
         // 🔴 Ajouter le vecteur horizontal
-
         L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer).arrowheads();
 
-  
-        // 🔵 Ajouter une ellipse d'erreur
+        // 🔵 Ajouter une ellipse d'erreur pour la composante horizontale
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
         let errorRadiusY = Math.sqrt(error[1] ** 2); // Rayon de l'ellipse sur l'axe Y
         
         L.ellipse(endPoint, [errorRadiusX, errorRadiusY], 0, { // 0° pour l'angle par défaut
-            color: "blue",
-            fillOpacity: 0.3
+            color: "red",
+            fillOpacity: 0.3,
+            stroke: false,
         }).addTo(errorLayer);
-
 
         // ✅ Ajouter le vecteur vertical
         let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]);
         L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
 
+        // 🔵 Ajouter un cercle d'erreur pour la composante verticale
+        L.circle(verticalEndPoint, {
+            radius: error[2], // Le rayon correspond à l'erreur verticale (en mètres)
+            color: "green",
+            fillOpacity: 0.3,
+            stroke: false,
+        }).addTo(verticalErrorLayer);
+
+        // Ajouter le marqueur de la station
         L.marker(startPoint, { icon: squareIcon })
             .addTo(stationMarkers)
             .bindPopup(`
@@ -145,34 +150,28 @@ toggleHorizontalButton.addEventListener("click", function(){
     if (map.hasLayer(vectorLayer)) {
       map.removeLayer(vectorLayer);
       map.removeLayer(errorLayer);
-      
-        
-        
-        toggleHorizontalButton.textContent = "Afficher vecteurs horizontaux";
+      toggleHorizontalButton.textContent = "Show horizontal vectors";
     } else {
       map.addLayer(vectorLayer);
       map.addLayer(stationMarkers);
       map.addLayer(errorLayer);
-        
-        toggleHorizontalButton.textContent = "Masquer vecteurs horizontaux";
+      toggleHorizontalButton.textContent = "Hide horizontal vectors";
     }
 });
-
 
 let toggleVerticalButton = document.getElementById("toggleVertical");
 toggleVerticalButton.addEventListener("click", function(){
     if (map.hasLayer(verticalVectorLayer)) {
         map.removeLayer(verticalVectorLayer);
-        
-        
-        toggleVerticalButton.textContent = "Afficher vecteurs verticaux";
+        map.removeLayer(verticalErrorLayer); // Masquer également l'erreur verticale
+        toggleVerticalButton.textContent = "Show vertical vectors";
     } else {
         map.addLayer(verticalVectorLayer);
+        map.addLayer(verticalErrorLayer); // Afficher également l'erreur verticale
         map.addLayer(stationMarkers);
-        toggleVerticalButton.textContent = "Masquer vecteurs verticaux";
+        toggleVerticalButton.textContent = "Hide vertical vectors";
     }
 });
-
 
 // 📌 Gestion des sliders
 dateSlider.addEventListener("input", function () {
