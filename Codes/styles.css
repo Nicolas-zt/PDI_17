@@ -64,6 +64,7 @@ input[type="range"] {
     font-size: 12px;
     position: relative;
     min-width: 130px;
+    max-width : 560px;
   }
   .scale-line {
     height: 10px;
@@ -71,5 +72,6 @@ input[type="range"] {
     border : 1px solid rgb(84, 0, 0) ;
     border-top : none;
     margin-top: 5px;
+    max-width : 560px;
     transition: width 0.5s; /* Smooth transition when resizing */
   }
