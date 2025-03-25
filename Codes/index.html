@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualisation GNSS</title>
+    <title id="PageTitle"></title>
 
     <!-- Styles CSS -->
     <link rel="stylesheet" href="styles.css">
@@ -27,7 +27,7 @@
 <body>
 
     <div class="container">
-        <h2>Visualisation GNSS</h2>
+        <h2 id="procTitle"></h2>
 
         <!-- Slider de date -->
         <label for="dateSlider" id="dateLabel">Date :</label>
@@ -36,7 +36,7 @@
 
         <!-- Slider de période -->
         <div id="periodSelectionContainer">
-            <label for="periodSlider">Période :</label>
+            <label for="periodSlider">Time Window :</label>
             <input type="range" id="periodSlider" min="0" max="1" step="1">
             <span id="selectedPeriodLabel">Chargement...</span>
         </div>
@@ -50,6 +50,11 @@
         <!-- Carte Leaflet pour les vecteurs  -->
         <div id="map" style="height:400px;"></div>
       
+    </div>
+
+    <div class="button-container">
+        <button id="toggleHorizontal">Hide horizontal vectors</button>
+        <button id="toggleVertical">Hide vertical vectors</button>
     </div>
 
     <script type="module" src="script.js"></script>
