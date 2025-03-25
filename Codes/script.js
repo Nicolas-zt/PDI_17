@@ -164,8 +164,8 @@ function updateScale(scale) {
 
 function metersToLatLon(lat, lon, deltaE, deltaN) {
     const earthRadius = 6371000; // Rayon de la Terre en mètres
-    const deltaLat = (deltaN/1000) / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
-    const deltaLon = (deltaE/1000) / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
+    const deltaLat = (deltaN) / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
+    const deltaLon = (deltaE) / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
 
     return {
         lat: lat + deltaLat*1000*scaleSlider.value*100,
@@ -208,6 +208,7 @@ function updateVectors(dateIndex, periodIndex) {
 
     vectorLayer.clearLayers();
     errorLayer.clearLayers();
+    verticalErrorLayer.clearLayers();
     stationMarkers.clearLayers();
     verticalVectorLayer.clearLayers();
 
