@@ -1,5 +1,4 @@
 <?php
-
 // Chemin des fichiers GNSS
 $folderPath = "../Fichiers_stations/";
 $files = glob($folderPath . "*.txt");
@@ -7,11 +6,19 @@ $files = glob($folderPath . "*.txt");
 // Stockage des données
 $results = [];
 $stationInfo = []; // Informations des stations
-$periods = [];     // Stocker dynamiquement les périodes disponibles
+$periods = []; 
+$proc = "";    // Stocker dynamiquement les périodes disponibles
 
 foreach ($files as $file) {
     $fileName = basename($file);
     $fileContent = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if (!is_dir($folderPath)) {
+        die("Le dossier spécifié n'existe pas.");
+    }
+    
+    if (empty($files)) {
+        die("Aucun fichier trouvé dans le dossier.");
+    }
 
     // Variables pour stocker les informations de l'en-tête
     $nodeCode = $nodeName = $nodeUrl = null;
@@ -19,7 +26,10 @@ foreach ($files as $file) {
 
     // Lire l'en-tête
     foreach ($fileContent as $line) {
-        if (strpos($line, "NODE_FID:") !== false) {
+        if (strpos($line, "PROC:") !== false) {
+            $proc = trim(explode(":", $line, 2)[1]);
+            $proc = str_replace(['{', '}'], '', $proc);  // Extraire PROC
+        } elseif (strpos($line, "NODE_FID:") !== false) {
             $nodeCode = trim(explode(":", $line, 2)[1]);
         } elseif (strpos($line, "NODE_NAME:") !== false) {
             $nodeName = trim(explode(":", $line, 2)[1], ' "');
@@ -85,6 +95,7 @@ foreach ($files as $file) {
 
 // Retourner les informations des stations, les périodes disponibles et les résultats
 echo json_encode([
+    "proc" => $proc,
     "stations" => $stationInfo,
     "periods" => $periods,
     "data" => $results

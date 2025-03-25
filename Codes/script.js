@@ -1,5 +1,5 @@
 // 📌 Initialisation des cartes
-let map = L.map('map').setView([-21.2449, 55.7089], 11);
+let map = L.map('map');
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
@@ -35,6 +35,9 @@ function loadGNSSData() {
     fetch("process.php")
         .then(response => response.json())
         .then(data => {
+            let proc = data.proc;
+            document.getElementById("PageTitle").textContent = proc;
+            document.getElementById("procTitle").textContent = proc;
             gnssData = data.data;
             stationsInfo = data.stations;
             dates = Object.keys(gnssData).sort();
@@ -53,6 +56,7 @@ function loadGNSSData() {
                 dateSlider.value = 0;
                 updateVectors(0, 0);
             }
+            adjustMapView();
         });
 }
 
@@ -65,6 +69,20 @@ function metersToLatLon(lat, lon, deltaE, deltaN) {
         lat: lat + deltaLat,
         lon: lon + deltaLon
     };
+}
+function adjustMapView() {
+    // Créer un objet LatLngBounds pour ajuster la vue à toutes les stations
+    let bounds = L.latLngBounds();
+
+    // Ajouter les coordonnées de chaque station aux limites
+    for (let stationFileName in stationsInfo) {
+        let stationInfo = stationsInfo[stationFileName];
+        let position = [stationInfo.latitude, stationInfo.longitude];
+        bounds.extend(position);
+    }
+
+    // Ajuster la vue de la carte pour englober toutes les stations
+    map.fitBounds(bounds);
 }
 
 // 📌 Mettre à jour les vecteurs
@@ -89,7 +107,7 @@ function updateVectors(dateIndex, periodIndex) {
     errorLayer.clearLayers();
     stationMarkers.clearLayers();
     verticalVectorLayer.clearLayers();
-    verticalErrorLayer.clearLayers(); // Nettoyer le calque des erreurs verticales
+
 
     for (let stationFileName in stationsData) {
         let stationData = stationsData[stationFileName];
@@ -126,6 +144,7 @@ function updateVectors(dateIndex, periodIndex) {
         let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]);
         L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
 
+      
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
         L.circle(verticalEndPoint, {
             radius: error[2], // Le rayon correspond à l'erreur verticale (en mètres)
@@ -135,7 +154,7 @@ function updateVectors(dateIndex, periodIndex) {
         }).addTo(verticalErrorLayer);
 
         // Ajouter le marqueur de la station
-        L.marker(startPoint, { icon: squareIcon })
+        L.circleMarker(startPoint, { radius: 4, color: "black" , fillOpacity: 0})
             .addTo(stationMarkers)
             .bindPopup(`
                 <b>Station:</b> ${stationInfo.name}<br>
