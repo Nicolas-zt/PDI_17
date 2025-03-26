@@ -209,7 +209,7 @@ function updateVectors(dateIndex, periodIndex) {
         let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*10000);
         L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
 
-<<<<<<<<< Temporary merge branch 1
+
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
         L.circle(verticalEndPoint, {
             radius: error[2]/1000*scaleSlider.value*10000, // Le rayon correspond à l'erreur verticale (en mètres)
@@ -258,4 +258,28 @@ toggleVerticalButton.addEventListener("click", function(){
     } else {
         map.addLayer(verticalVectorLayer);
         map.addLayer(verticalErrorLayer); // Afficher également l'erreur verticale
-      
+    }
+});
+        // 📌 Gestion des sliders
+dateSlider.addEventListener("input", function () {
+    updateVectors(this.value, periodSlider.value);
+});
+
+periodSlider.addEventListener("input", function () {
+    updateVectors(dateSlider.value, this.value);
+});
+
+scaleSlider.addEventListener("input", function () {
+   
+    updateVectors(dateSlider.value,periodSlider.value);
+});
+
+// 📌 Mettre à jour quand on zoome sur la carte
+map.on('zoomend', function () {
+    updateVectors(dateSlider.value,periodSlider.value);
+  
+});
+
+
+// 📌 Charger les données au démarrage
+loadGNSSData();
