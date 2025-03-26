@@ -1,18 +1,30 @@
 // 📌 Initialisation des cartes
 let map = L.map('map');
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+
+// Variables d'affichage modifiables
+
+let Facteur_echelle = 10000
+let couleur_horizontale = 'red'
+let couleur_verticale = 'green'
+let Lien_Tuiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+let Source_Tuiles = '&copy; OpenStreetMap contributors'
+
+
+// Tuiles utilisées comme fond de carte
+L.tileLayer(Lien_Tuiles, {
+    attribution: Source_Tuiles
 }).addTo(map);
 
+
+// Echelle de la carte (différente de celle des vecteurs)
 L.control.scale({imperial : false}).addTo(map)
 
+// Calques correspondants à chaque élément de la carte (vecteurs, erreurs, échelle)
 let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
-
 let scaleLayer = L.layerGroup().addTo(map);
-
 let verticalVectorLayer = L.layerGroup().addTo(map);
 let verticalErrorLayer = L.layerGroup().addTo(map); // Nouveau calque pour l'erreur verticale
 
@@ -21,6 +33,8 @@ let verticalErrorLayer = L.layerGroup().addTo(map); // Nouveau calque pour l'err
 let dateSlider = document.getElementById("dateSlider");
 let periodSlider = document.getElementById("periodSlider");
 let scaleSlider = document.getElementById("scaleSlider");
+
+    //Textes associés aux sliders
 let selectedDateDisplay = document.getElementById("selectedDate");
 let selectedPeriodLabel = document.getElementById("selectedPeriodLabel");
 let selectedScale = document.getElementById("selectedScale");
@@ -39,7 +53,7 @@ let CustomScale = null;
 
 // 📌 Chargement des données GNSS
 function loadGNSSData() {
-    fetch("process.php")
+    fetch("process.php") // Appel au fichier php (ou perl)
         .then(response => response.json())
         .then(data => {
             let proc = data.proc;
@@ -66,7 +80,7 @@ function loadGNSSData() {
                 });
             }
 
-            adjustMapView();
+            adjustMapView(); // Initialise la carte avec le bon niveau de zoom et à la bonne position
         });
 }
 
@@ -100,7 +114,7 @@ function updateScaleFromVector(vectorStart, vectorEnd,vectorEndReal) {
 
     if (CustomScaleControl) map.removeControl(CustomScaleControl);
 
-    // Création d'un Control leaflet pour en faire une echelle différente de celle de la carte
+    // Création d'un Control leaflet pour en faire une echelle de vecteurs différente de celle de la carte
     let CustomScale = L.Control.extend({
         onAdd: function () {
             let div = L.DomUtil.create('div', 'custom-scale');
@@ -119,6 +133,7 @@ function updateScaleFromVector(vectorStart, vectorEnd,vectorEndReal) {
 
 
 function metersToLatLon(lat, lon, deltaE, deltaN) {
+    //Convertit des coordonnées métriques en coordonnées géographiques (longitude, latitude)
     const earthRadius = 6371000; // Rayon de la Terre en mètres
     const deltaLat = (deltaN) / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
     const deltaLon = (deltaE) / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
@@ -189,8 +204,12 @@ function updateVectors(dateIndex, periodIndex) {
         if (!vector) continue;
 
         let startPoint = [position.lat, position.lon];
-        let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0]*1000*scaleSlider.value*10000, vector[1]*1000*scaleSlider.value*10000);
-
+        //Application de l'échelle :
+        // 1000 -> Conversion en millimètres (à retirer après correction des fichiers de déformations)
+        // scaleSlider.value -> Valeur du Slider d'échelle que l'on peut faire varier
+        // Facteur_echelle -> Facteur d'échelle fixé au début du code 
+        let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0]*1000*scaleSlider.value*Facteur_echelle, vector[1]*1000*scaleSlider.value*Facteur_echelle);
+        
         if (!firstVectorStart) {
             firstVectorStart = startPoint;
             firstVectorEndReal = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
@@ -198,27 +217,31 @@ function updateVectors(dateIndex, periodIndex) {
         }
     
         // 🔴 Ajouter le vecteur horizontal
-        L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer).arrowheads();
+        L.polyline([startPoint, endPoint], { color: couleur_horizontale }).addTo(vectorLayer).arrowheads();
 
         // 🔵 Ajouter une ellipse d'erreur pour la composante horizontale
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
         let errorRadiusY = Math.sqrt(error[1] ** 2); // Rayon de l'ellipse sur l'axe Y
         
-        L.ellipse(endPoint, [errorRadiusX/1000*scaleSlider.value*10000, errorRadiusY/1000*scaleSlider.value*10000], 0, { // 0° pour l'angle par défaut
-            color: "red",
+        // Application de l'échelle :
+        // 1/1000 -> Conversion en millimètres (à partir de mètres) 
+        // scaleSlider.value -> Valeur du Slider d'échelle que l'on peut faire varier
+        // Facteur_echelle -> Facteur d'échelle fixé au début du code  
+        L.ellipse(endPoint, [errorRadiusX/1000*scaleSlider.value*Facteur_echelle, errorRadiusY/1000*scaleSlider.value*Facteur_echelle], 0, { // 0° pour l'angle par défaut
+            color: couleur_horizontale,
             fillOpacity: 0.3,
             stroke: false,
         }).addTo(errorLayer);
 
         // ✅ Ajouter le vecteur vertical
         let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*10000);
-        L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
+        L.polyline([startPoint, verticalEndPoint], { color: couleur_verticale }).addTo(verticalVectorLayer).arrowheads();
 
 
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
         L.circle(verticalEndPoint, {
             radius: error[2]/1000*scaleSlider.value*10000, // Le rayon correspond à l'erreur verticale (en mètres)
-            color: "green",
+            color: couleur_verticale,
             fillOpacity: 0.3,
             stroke: false,
         }).addTo(verticalErrorLayer);
