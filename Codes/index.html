@@ -8,8 +8,9 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Leaflet.js -->
     <link rel="stylesheet" href="leaflet/leaflet.css" />
-    <!-- Lien vers le fichier JavaScript local -->
+    <!-- Lien vers le fichier JavaScript (leaflet) local -->
     <script src="leaflet/leaflet.js"></script>
+    <!-- Liens vers les librairies leaflet locales pour afficher les fleches de vecteurs et les ellipses d'erreurs-->
     <script src="leaflet/ellipse.js"></script>
     <script src="leaflet/leaflet.geometryutil.js"></script>
     <script src="leaflet/leaflet-arrowheads.js"></script>  
@@ -17,26 +18,32 @@
 <body>
     <div class="container">
         <h2 id="procTitle"></h2>
+
         <!-- Slider de date -->
         <label for="dateSlider" id="dateLabel">Date :</label>
         <input type="range" id="dateSlider" min="0" max="10" step="1">
+
         <!-- Slider de période -->
         <div id="periodSelectionContainer">
             <label for="periodSlider">Time Window :</label>
             <input type="range" id="periodSlider" min="0" max="1" step="1">
             <span id="selectedPeriodLabel">Chargement...</span>
         </div>
+        
         <!--Slider d'échelle-->
         <label for="scaleSlider">Echelle :</label>
         <input type="range" id="scaleSlider" min="0" max="10" step ="1">
         <span id="selectedScale">Chargement...</span>
+
         <!-- Carte Leaflet pour les vecteurs  -->
         <div id="map" style="height:400px;"></div>
     </div>
+    <!-- Boutons pour afficher/cacher les vecteurs horizontaux et verticaux-->
     <div class="button-container">
         <button id="toggleHorizontal">Hide horizontal vectors</button>
         <button id="toggleVertical">Hide vertical vectors</button>
     </div>
+    <!-- Lien vers le fichier JavaScript d'interactions avec la carte-->
     <script type="module" src="script.js"></script>
 </body>
 </html>
