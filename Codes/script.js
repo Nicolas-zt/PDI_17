@@ -8,7 +8,7 @@ let Facteur_echelle = 10000
 let couleur_horizontale = 'red'
 let couleur_verticale = 'green'
 let Lien_Tuiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-let Source_Tuiles = '&copy; OpenStreetMap contributors'
+let Source_Tuiles = '&copy; OpenStreetMap contributors' // Ligne en bas à droite de la carte faisant référence aux producteurs des tuiles qui doivent être cités
 
 
 // Tuiles utilisées comme fond de carte
@@ -85,6 +85,8 @@ function loadGNSSData() {
 }
 
 // 📌 Mise à jour de l'échelle
+
+// Fonctions permettant de définir le rapport de l'échelle
 function getVectorLengthInPixels(startPoint, endPoint) {
     let pixelStart = map.latLngToContainerPoint(startPoint);
     let pixelEnd = map.latLngToContainerPoint(endPoint);
@@ -113,6 +115,9 @@ function updateScaleFromVector(vectorStart, vectorEnd,vectorEndReal) {
     selectedScale.textContent = `Vectors : ${scaleInMM.toFixed(2)} mm`;
 
     if (CustomScaleControl) map.removeControl(CustomScaleControl);
+
+
+
 
     // Création d'un Control leaflet pour en faire une echelle de vecteurs différente de celle de la carte
     let CustomScale = L.Control.extend({
@@ -234,13 +239,13 @@ function updateVectors(dateIndex, periodIndex) {
         }).addTo(errorLayer);
 
         // ✅ Ajouter le vecteur vertical
-        let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*10000);
+        let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*Facteur_echelle);
         L.polyline([startPoint, verticalEndPoint], { color: couleur_verticale }).addTo(verticalVectorLayer).arrowheads();
 
 
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
         L.circle(verticalEndPoint, {
-            radius: error[2]/1000*scaleSlider.value*10000, // Le rayon correspond à l'erreur verticale (en mètres)
+            radius: error[2]/1000*scaleSlider.value*Facteur_echelle, // Le rayon correspond à l'erreur verticale (en mètres)
             color: couleur_verticale,
             fillOpacity: 0.3,
             stroke: false,
@@ -268,14 +273,14 @@ function updateVectors(dateIndex, periodIndex) {
 let toggleHorizontalButton = document.getElementById("toggleHorizontal");
 toggleHorizontalButton.addEventListener("click", function(){
     if (map.hasLayer(vectorLayer)) { // Si la carte contient des vecteurs horizontaux, on les retire
-      map.removeLayer(vectorLayer);
-      map.removeLayer(errorLayer);   // Masquer également l'erreur horizontale
-      toggleHorizontalButton.textContent = "Show horizontal vectors";
+        map.removeLayer(vectorLayer);
+        map.removeLayer(errorLayer);   // Masquer également l'erreur horizontale
+        toggleHorizontalButton.textContent = "Show horizontal vectors";
     } else {                         // Si la carte ne contient pas de vecteurs horizontaux, on les ajoute
-      map.addLayer(vectorLayer);
-      map.addLayer(stationMarkers);
-      map.addLayer(errorLayer);     // Afficher également l'erreur horizontale
-      toggleHorizontalButton.textContent = "Hide horizontal vectors";
+        map.addLayer(vectorLayer);
+        map.addLayer(stationMarkers);
+        map.addLayer(errorLayer);     // Afficher également l'erreur horizontale
+        toggleHorizontalButton.textContent = "Hide horizontal vectors";
     }
 });
 
@@ -301,14 +306,14 @@ periodSlider.addEventListener("input", function () {    // Sélection Fenêtre d
 });
 
 scaleSlider.addEventListener("input", function () {     // Sélection échelle
-   
+
     updateVectors(dateSlider.value,periodSlider.value);
 });
 
 // 📌 Mettre à jour quand on zoome sur la carte
 map.on('zoomend', function () {
     updateVectors(dateSlider.value,periodSlider.value);
-  
+
 });
 
 
