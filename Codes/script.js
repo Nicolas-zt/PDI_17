@@ -258,30 +258,4 @@ toggleVerticalButton.addEventListener("click", function(){
     } else {
         map.addLayer(verticalVectorLayer);
         map.addLayer(verticalErrorLayer); // Afficher également l'erreur verticale
-        map.addLayer(stationMarkers);
-        toggleVerticalButton.textContent = "Hide vertical vectors";
-    }
-});
-
-// 📌 Gestion des sliders
-dateSlider.addEventListener("input", function () {
-    updateVectors(this.value, periodSlider.value);
-});
-
-periodSlider.addEventListener("input", function () {
-    updateVectors(dateSlider.value, this.value);
-});
-
-scaleSlider.addEventListener("input", function () {
-
-    updateVectors(dateSlider.value,periodSlider.value);
-});
-
-// 📌 Mettre à jour quand on zoome sur la carte
-map.on('zoomend', function () {
-    updateVectors(dateSlider.value,periodSlider.value);
-});
-
-// 📌 Charger les données au démarrage
-loadGNSSData();
-
+      
