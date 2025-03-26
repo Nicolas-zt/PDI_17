@@ -100,19 +100,23 @@ function updateScaleFromVector(vectorStart, vectorEnd,vectorEndReal) {
 
     if (CustomScaleControl) map.removeControl(CustomScaleControl);
 
+    // Création d'un Control leaflet pour en faire une echelle différente de celle de la carte
     let CustomScale = L.Control.extend({
         onAdd: function () {
             let div = L.DomUtil.create('div', 'custom-scale');
-            div.innerHTML = `<strong>Vectors : <span id="scaleValue">${scaleInMM.toFixed(2)}</span> mm</strong>`;
-            let scaleLine = L.DomUtil.create('div', 'scale-line');
-            scaleLine.style.width = '100px';
-            div.appendChild(scaleLine);
+            div.innerHTML = `<strong>Vectors : <span id="scaleValue">${scaleInMM.toFixed(2)}</span> mm</strong>`; // Valeur en mm représenté par la barre d'échelle
+            let scaleLine = L.DomUtil.create('div', 'scale-line'); // Création de la div HTML pour l'échelle des vecteurs
+            scaleLine.style.width = '100px'; // Taille de la barre d'échelle des vecteurs
+            div.appendChild(scaleLine); // Ajout de l'échelle dans la div
             return div;
         }
     });
+
+    // Instanciation du Control créé précédemment et ajout à la carte
     CustomScaleControl = new CustomScale({ position: 'bottomleft' });
     map.addControl(CustomScaleControl);
 }
+
 
 function metersToLatLon(lat, lon, deltaE, deltaN) {
     const earthRadius = 6371000; // Rayon de la Terre en mètres
@@ -158,6 +162,7 @@ function updateVectors(dateIndex, periodIndex) {
 
     let stationsData = gnssData[selectedDate];
 
+    // Suppression des vecteurs/ellipses d'erreurs avant d'ajouter les versions actualisées
     vectorLayer.clearLayers();
     errorLayer.clearLayers();
     verticalErrorLayer.clearLayers();
@@ -235,41 +240,44 @@ function updateVectors(dateIndex, periodIndex) {
     }
 }
 
+// Ajout d'un bouton pour Montrer/Cacher les vecteurs horizontaux
+// Par défaut 
 let toggleHorizontalButton = document.getElementById("toggleHorizontal");
 toggleHorizontalButton.addEventListener("click", function(){
-    if (map.hasLayer(vectorLayer)) {
+    if (map.hasLayer(vectorLayer)) { // Si la carte contient des vecteurs horizontaux, on les retire
       map.removeLayer(vectorLayer);
-      map.removeLayer(errorLayer);
+      map.removeLayer(errorLayer);   // Masquer également l'erreur horizontale
       toggleHorizontalButton.textContent = "Show horizontal vectors";
-    } else {
+    } else {                         // Si la carte ne contient pas de vecteurs horizontaux, on les ajoute
       map.addLayer(vectorLayer);
       map.addLayer(stationMarkers);
-      map.addLayer(errorLayer);
+      map.addLayer(errorLayer);     // Afficher également l'erreur horizontale
       toggleHorizontalButton.textContent = "Hide horizontal vectors";
     }
 });
 
+// Ajout d'un bouton pour Montrer/Cacher les vecteurs verticaux
 let toggleVerticalButton = document.getElementById("toggleVertical");
 toggleVerticalButton.addEventListener("click", function(){
-    if (map.hasLayer(verticalVectorLayer)) {
+    if (map.hasLayer(verticalVectorLayer)) { // Si la carte contient des vecteurs verticaux, on les retire
         map.removeLayer(verticalVectorLayer);
         map.removeLayer(verticalErrorLayer); // Masquer également l'erreur verticale
         toggleVerticalButton.textContent = "Show vertical vectors";
-    } else {
+    } else {                                 // Si la carte ne contient pas de vecteurs verticaux, on les ajoute
         map.addLayer(verticalVectorLayer);
-        map.addLayer(verticalErrorLayer); // Afficher également l'erreur verticale
+        map.addLayer(verticalErrorLayer);    // Afficher également l'erreur verticale
     }
 });
         // 📌 Gestion des sliders
-dateSlider.addEventListener("input", function () {
+dateSlider.addEventListener("input", function () {      // Sélection date de fin
     updateVectors(this.value, periodSlider.value);
 });
 
-periodSlider.addEventListener("input", function () {
+periodSlider.addEventListener("input", function () {    // Sélection Fenêtre de temps
     updateVectors(dateSlider.value, this.value);
 });
 
-scaleSlider.addEventListener("input", function () {
+scaleSlider.addEventListener("input", function () {     // Sélection échelle
    
     updateVectors(dateSlider.value,periodSlider.value);
 });
