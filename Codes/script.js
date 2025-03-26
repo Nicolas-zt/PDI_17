@@ -16,12 +16,6 @@ let scaleLayer = L.layerGroup().addTo(map);
 let verticalVectorLayer = L.layerGroup().addTo(map);
 let verticalErrorLayer = L.layerGroup().addTo(map); // Nouveau calque pour l'erreur verticale
 
-// 📌 Définition de l'icône personnalisée en forme de carré noir et plus petit
-let squareIcon = L.divIcon({
-    className: 'custom-square-icon',
-    iconSize: [8, 8],
-    html: '<div style="width:8px; height:8px; background:#000; border:1px solid #000;"></div>'
-});
 
 // 📌 Gestion des sliders
 let dateSlider = document.getElementById("dateSlider");
@@ -38,6 +32,9 @@ let dates = [];
 let availablePeriods = [];
 let echelles = [];
 let stationsInfo = [];
+
+let CustomScaleControl = null;
+let CustomScale = null;
 
 
 // 📌 Chargement des données GNSS
@@ -64,102 +61,57 @@ function loadGNSSData() {
                 dateSlider.min = 0;
                 dateSlider.max = dates.length - 1;
                 dateSlider.value = 0;
-                updateVectors(0, 0);
+                map.whenReady(() => {
+                    updateVectors(0, 0);
+                });
             }
+
             adjustMapView();
         });
 }
 
-// 📌 Gestion de l'echelle
+// 📌 Mise à jour de l'échelle
+function getVectorLengthInPixels(startPoint, endPoint) {
+    let pixelStart = map.latLngToContainerPoint(startPoint);
+    let pixelEnd = map.latLngToContainerPoint(endPoint);
+    return pixelStart.distanceTo(pixelEnd);
+}
 
-scaleSlider.min = 1 
-scaleSlider.max = 100
-scaleSlider.value = 1
+function getRealVectorLength(startPoint, endPoint) {
+    return map.distance(startPoint, endPoint);
+}
 
-function getScaleLength(zoomLevel,baseLength) {
-    // Exemple : 1 km à zoom = 13, ajustez les facteurs selon vos besoins
-    //var baseLength = 100; longueur de base du segment en pixels (1 km)
-    var zoomFactor = Math.pow(2, 13 - zoomLevel); // Factorisation basée sur le zoom (plus le zoom est grand, plus le segment est court)
-    return baseLength / zoomFactor;
-  }
-
-var CustomScale = L.Control.extend({
-    onAdd: function(map) {
-      let div = L.DomUtil.create('div', 'custom-scale');
-      let scaleLength = getScaleLength(map.getZoom(),scaleSlider.value*6);
-      div.innerHTML = "<strong>Size of 10 millimeter :</strong> ";
-
-
-      let scaleLine = L.DomUtil.create('div', 'scale-line');
-        scaleLine.style.width = scaleLength*10 + 'px'; // La largeur du segment est définie par la fonction getScaleLength
-        div.style.width = (scaleLength*10+20) + 'px';
-        
-        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
-
-        // Écouter les changements de zoom pour mettre à jour l'échelle
-        map.on('zoomend', function() {
-          let scaleLength = getScaleLength(map.getZoom(),scaleSlider.value*6);
-          scaleLine.style.width = scaleLength*10 + 'px'; // Mettre à jour la longueur du segment
-          div.style.width = (scaleLength*10+20) + 'px';
-          console.log(map.getZoom());
-        });
-
-
-      return div;
-    },
-
-    onRemove: function (map) {
-
-    }
-  });
-
-
-  // Ajout du contrôle personnalisé à la carte
-    let CustomScaleControl = new CustomScale({ position: 'bottomleft' })
-    map.addControl(CustomScaleControl);
-
-
-// 📌 Mettre à jour l'echelle
-function updateScale(scale) {
-
-    map.removeControl(CustomScaleControl);
-    
-
-    selectedScale.textContent = `${'1 : '+scale+'00000'}`;
-
-    // création d'un control 
-    CustomScale = L.Control.extend({
-        onAdd: function(map) {
-        let div = L.DomUtil.create('div', 'custom-scale');
-        let scaleLength = getScaleLength(map.getZoom(),scale*6);
-        div.innerHTML = "<strong>Size of 10 millimeter :</strong> ";
-    
-    
-        let scaleLine = L.DomUtil.create('div', 'scale-line');
-        scaleLine.style.width = scaleLength*10 + 'px'; // La largeur du segment est définie par la fonction getScaleLength
-        div.style.width = (scaleLength*10+20) + 'px';
-        
-        div.appendChild(scaleLine); // Ajouter la ligne au contrôle
-
-        // Écouter les changements de zoom pour mettre à jour l'échelle
-        map.on('zoomend', function() {
-            let scaleLength = getScaleLength(map.getZoom(),scale*6);
-            scaleLine.style.width = scaleLength*10 + 'px'; // Mettre à jour la longueur du segment
-            div.style.width = (scaleLength*10+20) + 'px';
-            console.log(map.getZoom());
-        });
-    
-    
-        return div;
+function updateScaleFromVector(vectorStart, vectorEnd,vectorEndReal) {
+    if (!vectorStart || !vectorEnd) {
+        if (CustomScaleControl) {
+            map.removeControl(CustomScaleControl);
+            CustomScaleControl = null;
         }
-      });
-     
-      //Instanciation du control créé précédemment
-      CustomScaleControl = new CustomScale({ position: 'bottomleft' })
+        selectedScale.textContent = ""; // Masquer le texte de l'échelle
+        return;
+    }
 
-      map.addControl(CustomScaleControl);
+    let vectorLengthPixels = getVectorLengthInPixels(vectorStart, vectorEnd);
+    let vectorLengthMeters = getRealVectorLength(vectorStart, vectorEndReal);
+    if (vectorLengthMeters === 0) return;
 
-      
+    let scaleInMM = (100 / vectorLengthPixels) * vectorLengthMeters * 1000;
+    selectedScale.textContent = `Vectors : ${scaleInMM.toFixed(2)} mm`;
+
+    if (CustomScaleControl) map.removeControl(CustomScaleControl);
+
+    let CustomScale = L.Control.extend({
+        onAdd: function () {
+            let div = L.DomUtil.create('div', 'custom-scale');
+            div.innerHTML = `<strong>Vectors : <span id="scaleValue">${scaleInMM.toFixed(2)}</span> mm</strong>`;
+            let scaleLine = L.DomUtil.create('div', 'scale-line');
+            scaleLine.style.width = '100px';
+            div.appendChild(scaleLine);
+            return div;
+        }
+    });
+    CustomScaleControl = new CustomScale({ position: 'bottomleft' });
+    map.addControl(CustomScaleControl);
 }
 
 function metersToLatLon(lat, lon, deltaE, deltaN) {
@@ -168,10 +120,11 @@ function metersToLatLon(lat, lon, deltaE, deltaN) {
     const deltaLon = (deltaE) / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
 
     return {
-        lat: lat + deltaLat*1000*scaleSlider.value*100,
-        lon: lon + deltaLon*1000*scaleSlider.value*100
+        lat: lat + deltaLat,
+        lon: lon + deltaLon
     };
 }
+
 function adjustMapView() {
     // Créer un objet LatLngBounds pour ajuster la vue à toutes les stations
     let bounds = L.latLngBounds();
@@ -186,7 +139,6 @@ function adjustMapView() {
     // Ajuster la vue de la carte pour englober toutes les stations
     map.fitBounds(bounds);
 }
-
 
 // 📌 Mettre à jour les vecteurs
 function updateVectors(dateIndex, periodIndex) {
@@ -212,6 +164,9 @@ function updateVectors(dateIndex, periodIndex) {
     stationMarkers.clearLayers();
     verticalVectorLayer.clearLayers();
 
+    let firstVectorStart = null;
+    let firstVectorEnd = null;
+    let firstVectorEndReal = null;
 
     for (let stationFileName in stationsData) {
         let stationData = stationsData[stationFileName];
@@ -229,8 +184,14 @@ function updateVectors(dateIndex, periodIndex) {
         if (!vector) continue;
 
         let startPoint = [position.lat, position.lon];
-        let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
+        let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0]*1000*scaleSlider.value*10000, vector[1]*1000*scaleSlider.value*10000);
 
+        if (!firstVectorStart) {
+            firstVectorStart = startPoint;
+            firstVectorEndReal = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
+            firstVectorEnd = endPoint;
+        }
+    
         // 🔴 Ajouter le vecteur horizontal
         L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer).arrowheads();
 
@@ -238,20 +199,20 @@ function updateVectors(dateIndex, periodIndex) {
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
         let errorRadiusY = Math.sqrt(error[1] ** 2); // Rayon de l'ellipse sur l'axe Y
         
-        L.ellipse(endPoint, [errorRadiusX, errorRadiusY], 0, { // 0° pour l'angle par défaut
+        L.ellipse(endPoint, [errorRadiusX/1000*scaleSlider.value*10000, errorRadiusY/1000*scaleSlider.value*10000], 0, { // 0° pour l'angle par défaut
             color: "red",
             fillOpacity: 0.3,
             stroke: false,
         }).addTo(errorLayer);
 
         // ✅ Ajouter le vecteur vertical
-        let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]);
+        let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*10000);
         L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
 
       
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
         L.circle(verticalEndPoint, {
-            radius: error[2], // Le rayon correspond à l'erreur verticale (en mètres)
+            radius: error[2]/1000*scaleSlider.value*10000, // Le rayon correspond à l'erreur verticale (en mètres)
             color: "green",
             fillOpacity: 0.3,
             stroke: false,
@@ -265,6 +226,12 @@ function updateVectors(dateIndex, periodIndex) {
                 <b>Code:</b> ${stationInfo.code}<br>
                 <b>URL:</b> <a href="${stationInfo.url}" target="_blank">${stationInfo.url}</a>
             `);
+    }
+    // Mise à jour de l'échelle
+    if (firstVectorStart && firstVectorEnd) {
+        updateScaleFromVector(firstVectorStart, firstVectorEnd, firstVectorEndReal);
+    } else {
+        updateScaleFromVector(null, null,null); // Masquer l'échelle si aucun vecteur
     }
 }
 
@@ -306,10 +273,15 @@ periodSlider.addEventListener("input", function () {
 });
 
 scaleSlider.addEventListener("input", function () {
-   
-    updateScale(this.value);
+
+    updateVectors(dateSlider.value,periodSlider.value);
+});
+
+// 📌 Mettre à jour quand on zoome sur la carte
+map.on('zoomend', function () {
     updateVectors(dateSlider.value,periodSlider.value);
 });
 
 // 📌 Charger les données au démarrage
 loadGNSSData();
+

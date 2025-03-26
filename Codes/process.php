@@ -100,5 +100,4 @@ echo json_encode([
     "periods" => $periods,
     "data" => $results
 ]);
-
 ?>
