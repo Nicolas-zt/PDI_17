@@ -57,3 +57,21 @@ input[type="range"] {
 }
 
 
+.custom-scale {
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #ccc;
+    padding: 5px;
+    font-size: 12px;
+    position: relative;
+    min-width: 130px;
+    max-width : 560px;
+  }
+  .scale-line {
+    height: 10px;
+    background-color: #ffc8c8;
+    border : 1px solid rgb(84, 0, 0) ;
+    border-top : none;
+    margin-top: 5px;
+    max-width : 560px;
+    transition: width 0.5s; /* Smooth transition when resizing */
+  }
