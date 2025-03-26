@@ -25,12 +25,14 @@ input[type="range"] {
     width: 80%;
 }
 
+/* Texte du slider de date */
 #selectedDate {
     display: block;
     margin: 10px;
     font-weight: bold;
 }
 
+/* Taille de la carte */
 #map {
     height: 400px;
     width: 100%;
@@ -56,7 +58,7 @@ input[type="range"] {
     margin: 5px;
 }
 
-
+/* Echelle des vecteurs */
 .custom-scale {
     background-color: rgba(255, 255, 255, 0.7);
     border: 1px solid #ccc;
@@ -66,12 +68,14 @@ input[type="range"] {
     min-width: 130px;
     max-width : 560px;
   }
-  .scale-line {
+
+/* Barre d'echelle des vecteurs */  
+.scale-line {
     height: 10px;
     background-color: #ffc8c8;
     border : 1px solid rgb(84, 0, 0) ;
     border-top : none;
     margin-top: 5px;
     max-width : 560px;
-    transition: width 0.5s; /* Smooth transition when resizing */
+    transition: width 0.5s; /* Vitesse de transition lors d'un changement de taille */
   }
