@@ -30,3 +30,12 @@ La barre d'échelle rouge correspond à l'échelle des vecteurs.
 La barre d'échelle blanche correspond à l'échelle de la carte.
 
 Les échelles s'ajustent en fonction du niveau de zoom.
+
+## Paramètres
+
+Il est possible de modifier 4 paramètres dans le JavaScript :
+
+    - Facteur d'échelle à la ligne 7 
+    - Couleur des vecteurs horizontaux à la ligne 8 
+    - Couleur des vecteurs verticaux à la ligne 9
+    - Tuiles utilisées comme fond de carte à la ligne 10 + Sources des tuiles à la ligne 11 
