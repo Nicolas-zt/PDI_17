@@ -1,11 +1,26 @@
 // 📌 Initialisation des cartes
 let map = L.map('map');
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+
+// Variables d'affichage modifiables
+
+let Facteur_echelle = 10000
+let couleur_horizontale = 'red'
+let couleur_verticale = 'green'
+let Lien_Tuiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+let Source_Tuiles = '&copy; OpenStreetMap contributors' // Ligne en bas à droite de la carte faisant référence aux producteurs des tuiles qui doivent être cités
+
+
+// Tuiles utilisées comme fond de carte
+L.tileLayer(Lien_Tuiles, {
+    attribution: Source_Tuiles
 }).addTo(map);
 
+
+// Echelle de la carte (différente de celle des vecteurs)
 L.control.scale({imperial : false}).addTo(map)
+
+// Calques correspondants à chaque élément de la carte (vecteurs, erreurs, échelle)
 let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
@@ -18,6 +33,8 @@ let verticalErrorLayer = L.layerGroup().addTo(map); // Nouveau calque pour l'err
 let dateSlider = document.getElementById("dateSlider");
 let periodSlider = document.getElementById("periodSlider");
 let scaleSlider = document.getElementById("scaleSlider");
+
+    //Textes associés aux sliders
 let selectedDateDisplay = document.getElementById("selectedDate");
 let selectedPeriodLabel = document.getElementById("selectedPeriodLabel");
 let selectedScale = document.getElementById("selectedScale");
@@ -39,7 +56,7 @@ let CustomScale = null;
  * Charger les données GNSS à partir du serveur
  */
 function loadGNSSData() {
-    fetch("process.pl")
+    fetch("process.php") // Appel au fichier php (ou perl)
         .then(response => response.json())
         .then(data => {
             let proc = data.proc;
@@ -66,11 +83,13 @@ function loadGNSSData() {
                 });
             }
 
-            adjustMapView();
+            adjustMapView(); // Initialise la carte avec le bon niveau de zoom et à la bonne position
         });
 }
 
 // 📌 Mise à jour de l'échelle
+
+// Fonctions permettant de définir le rapport de l'échelle
 /**
  * Calculer la longueur du vecteur en pixels
  * @param {L.LatLng} startPoint
@@ -107,21 +126,29 @@ function updateScaleFromVector(vectorStart, vectorEnd,vectorEndReal) {
 
     if (CustomScaleControl) map.removeControl(CustomScaleControl);
 
+
+
+
+    // Création d'un Control leaflet pour en faire une echelle de vecteurs différente de celle de la carte
     let CustomScale = L.Control.extend({
         onAdd: function () {
             let div = L.DomUtil.create('div', 'custom-scale');
-            div.innerHTML = `<strong>Vectors : <span id="scaleValue">${scaleInMM.toFixed(2)}</span> mm</strong>`;
-            let scaleLine = L.DomUtil.create('div', 'scale-line');
-            scaleLine.style.width = '100px';
-            div.appendChild(scaleLine);
+            div.innerHTML = `<strong>Vectors : <span id="scaleValue">${scaleInMM.toFixed(2)}</span> mm</strong>`; // Valeur en mm représenté par la barre d'échelle
+            let scaleLine = L.DomUtil.create('div', 'scale-line'); // Création de la div HTML pour l'échelle des vecteurs
+            scaleLine.style.width = '100px'; // Taille de la barre d'échelle des vecteurs
+            div.appendChild(scaleLine); // Ajout de l'échelle dans la div
             return div;
         }
     });
+
+    // Instanciation du Control créé précédemment et ajout à la carte
     CustomScaleControl = new CustomScale({ position: 'bottomleft' });
     map.addControl(CustomScaleControl);
 }
 
+
 function metersToLatLon(lat, lon, deltaE, deltaN) {
+    //Convertit des coordonnées métriques en coordonnées géographiques (longitude, latitude)
     const earthRadius = 6371000; // Rayon de la Terre en mètres
     const deltaLat = deltaN / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
     const deltaLon =(deltaE / (earthRadius *  Math.cos(lat * Math.PI / 180))) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
@@ -164,6 +191,7 @@ function updateVectors(dateIndex, periodIndex) {
 
     let stationsData = gnssData[selectedDate];
 
+    // Suppression des vecteurs/ellipses d'erreurs avant d'ajouter les versions actualisées
     vectorLayer.clearLayers();
     errorLayer.clearLayers();
     verticalErrorLayer.clearLayers();
@@ -190,8 +218,12 @@ function updateVectors(dateIndex, periodIndex) {
         if (!vector) continue;
 
         let startPoint = [position.lat, position.lon];
-        let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0]*1000*scaleSlider.value*10000, vector[1]*1000*scaleSlider.value*10000);
-
+        //Application de l'échelle :
+        // 1000 -> Conversion en millimètres (à retirer après correction des fichiers de déformations)
+        // scaleSlider.value -> Valeur du Slider d'échelle que l'on peut faire varier
+        // Facteur_echelle -> Facteur d'échelle fixé au début du code 
+        let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0]*1000*scaleSlider.value*Facteur_echelle, vector[1]*1000*scaleSlider.value*Facteur_echelle);
+        
      
         firstVectorStart = startPoint;
         firstVectorEndReal = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
@@ -199,28 +231,31 @@ function updateVectors(dateIndex, periodIndex) {
       
     
         // 🔴 Ajouter le vecteur horizontal
-        L.polyline([startPoint, endPoint], { color: "red" }).arrowheads({yawn: 40,fill: true}).addTo(vectorLayer);
-
+        L.polyline([startPoint, endPoint], { color: couleur_horizontale }).addTo(vectorLayer).arrowheads();
 
         // 🔵 Ajouter une ellipse d'erreur pour la composante horizontale
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
         let errorRadiusY = Math.sqrt(error[1] ** 2); // Rayon de l'ellipse sur l'axe Y
         
-        L.ellipse(endPoint, [errorRadiusX/1000*scaleSlider.value*10000, errorRadiusY/1000*scaleSlider.value*10000], 0, { // 0° pour l'angle par défaut
-            color: "red",
+        // Application de l'échelle :
+        // 1/1000 -> Conversion en millimètres (à partir de mètres) 
+        // scaleSlider.value -> Valeur du Slider d'échelle que l'on peut faire varier
+        // Facteur_echelle -> Facteur d'échelle fixé au début du code  
+        L.ellipse(endPoint, [errorRadiusX/1000*scaleSlider.value*Facteur_echelle, errorRadiusY/1000*scaleSlider.value*Facteur_echelle], 0, { // 0° pour l'angle par défaut
+            color: couleur_horizontale,
             fillOpacity: 0.3,
             stroke: false,
         }).addTo(errorLayer);
 
         // ✅ Ajouter le vecteur vertical
-        let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*10000);
-        L.polyline([startPoint, verticalEndPoint], { color: "green" }).arrowheads({yawn: 40,fill: true}).addTo(verticalVectorLayer);
+        let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*Facteur_echelle);
+        L.polyline([startPoint, verticalEndPoint], { color: couleur_verticale }).addTo(verticalVectorLayer).arrowheads();
 
 
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
         L.circle(verticalEndPoint, {
-            radius: error[2]/1000*scaleSlider.value*10000, // Le rayon correspond à l'erreur verticale (en mètres)
-            color: "green",
+            radius: error[2]/1000*scaleSlider.value*Facteur_echelle, // Le rayon correspond à l'erreur verticale (en mètres)
+            color: couleur_verticale,
             fillOpacity: 0.3,
             stroke: false,
         }).addTo(verticalErrorLayer);
@@ -240,49 +275,52 @@ function updateVectors(dateIndex, periodIndex) {
     
 }
 
+// Ajout d'un bouton pour Montrer/Cacher les vecteurs horizontaux
+// Par défaut 
 let toggleHorizontalButton = document.getElementById("toggleHorizontal");
 toggleHorizontalButton.addEventListener("click", function(){
-    if (map.hasLayer(vectorLayer)) {
-      map.removeLayer(vectorLayer);
-      map.removeLayer(errorLayer);
-      toggleHorizontalButton.textContent = "Show horizontal vectors";
-    } else {
-      map.addLayer(vectorLayer);
-      map.addLayer(errorLayer);
-      toggleHorizontalButton.textContent = "Hide horizontal vectors";
+    if (map.hasLayer(vectorLayer)) { // Si la carte contient des vecteurs horizontaux, on les retire
+        map.removeLayer(vectorLayer);
+        map.removeLayer(errorLayer);   // Masquer également l'erreur horizontale
+        toggleHorizontalButton.textContent = "Show horizontal vectors";
+    } else {                         // Si la carte ne contient pas de vecteurs horizontaux, on les ajoute
+        map.addLayer(vectorLayer);
+        map.addLayer(errorLayer);     // Afficher également l'erreur horizontale
+        toggleHorizontalButton.textContent = "Hide horizontal vectors";
     }
 });
 
+// Ajout d'un bouton pour Montrer/Cacher les vecteurs verticaux
 let toggleVerticalButton = document.getElementById("toggleVertical");
 toggleVerticalButton.addEventListener("click", function(){
-    if (map.hasLayer(verticalVectorLayer)) {
+    if (map.hasLayer(verticalVectorLayer)) { // Si la carte contient des vecteurs verticaux, on les retire
         map.removeLayer(verticalVectorLayer);
         map.removeLayer(verticalErrorLayer); // Masquer également l'erreur verticale
         toggleVerticalButton.textContent = "Show vertical vectors";
-    } else {
+    } else {                                 // Si la carte ne contient pas de vecteurs verticaux, on les ajoute
         map.addLayer(verticalVectorLayer);
         map.addLayer(verticalErrorLayer); // Afficher également l'erreur verticale
         toggleVerticalButton.textContent = "Hide vertical vectors";
     }
 });
         // 📌 Gestion des sliders
-dateSlider.addEventListener("input", function () {
+dateSlider.addEventListener("input", function () {      // Sélection date de fin
     updateVectors(this.value, periodSlider.value);
 });
 
-periodSlider.addEventListener("input", function () {
+periodSlider.addEventListener("input", function () {    // Sélection Fenêtre de temps
     updateVectors(dateSlider.value, this.value);
 });
 
-scaleSlider.addEventListener("input", function () {
-   
+scaleSlider.addEventListener("input", function () {     // Sélection échelle
+
     updateVectors(dateSlider.value,periodSlider.value);
 });
 
 // 📌 Mettre à jour quand on zoome sur la carte
 map.on('zoomend', function () {
     updateVectors(dateSlider.value,periodSlider.value);
-  
+
 });
 
 // 📌 Création d'une légende

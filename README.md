@@ -1,26 +1,14 @@
 # PDI_17
 
-Cette API permet de représenter dynamiquement des vecteurs de déformations GNSS pour les 4 volcans français.
+## Description
 
+Ce projet a pour but de proposer une représentation dynamique de vecteurs de déformations GNSS dans les 4 volcans français.
+Cette solution est déstinée à être implémentée dans le logiciel WebObs développé par l'Institut de Physique du Globe de Paris dont l'utilisation est exclusivement privée.
 
-## Sliders
-Le premier Slider permet de sélectionner la date à laquelle on souhaite représenter les déformations.
-Le second Slider permet de sélectionner la fenêtre d'intégration des données.
+## Installation
 
-Ainsi la date de début du premier slider correspond à la date sélectionnée moins la fenêtre de temps sélectionnée. 
+L'une des contraintes de cette solution est de pouvoir fonctionner sans internet c'est pourquoi l'ensemble des librairies utilisées sont téléchargées dans le sous-dossier leaflet présent sur le github.
+Seules les tuiles de fond de carte nécessitent une connexion internet mais peuvent être changées facilement à la ligne 10 du JavaScript (Modifier également la ligne 11 renseignant les sources des tuiles utilisées).
 
-Le troisième slider permet de modifier l'échelle des vecteurs (qui est différente de l'échelle de la carte). Une échelle 1:100000 
-signifie que le vecteur est représenté 100000 fois plus grand que ce qu'il est vraiment.
+La version 7.4.1 de PHP a été utilisée durant le développement de cette solution, cependant PERL peut également être utilisé à condition de changer l'extension du fichier renseigné à la ligne 56 du JavaScript.
 
-## Vecteurs
-Par défaut les vecteurs horizontaux et verticaux sont affichés
-
-Les vecteurs rouges correspondent aux déformations horizontales et sont accompagnés d'une ellipse d'erreur de la même couleur.
-Les vecteurs verts correspondent aux déformations verticales et sont accompagnés d'un cercle d'erreur de la même couleur.
-
-En dessous de la carte un bouton permet de cacher/afficher les vecteurs horizontaux, de même pour les vecteurs verticaux.
-
-## Echelles
-
-La barre d'échelle rouge correspond à l'échelle des vecteurs.
-La barre d'échelle blanche correspond à l'échelle de la carte.
