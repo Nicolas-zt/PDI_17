@@ -6,13 +6,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 L.control.scale({imperial : false}).addTo(map)
-
 let vectorLayer = L.layerGroup().addTo(map);
 let errorLayer = L.layerGroup().addTo(map);
 let stationMarkers = L.layerGroup().addTo(map);
-
 let scaleLayer = L.layerGroup().addTo(map);
-
 let verticalVectorLayer = L.layerGroup().addTo(map);
 let verticalErrorLayer = L.layerGroup().addTo(map); // Nouveau calque pour l'erreur verticale
 
@@ -38,8 +35,11 @@ let CustomScale = null;
 
 
 // 📌 Chargement des données GNSS
+/**
+ * Charger les données GNSS à partir du serveur
+ */
 function loadGNSSData() {
-    fetch("process.php")
+    fetch("process.pl")
         .then(response => response.json())
         .then(data => {
             let proc = data.proc;
@@ -71,6 +71,13 @@ function loadGNSSData() {
 }
 
 // 📌 Mise à jour de l'échelle
+/**
+ * Calculer la longueur du vecteur en pixels
+ * @param {L.LatLng} startPoint
+ * @param {L.LatLng} endPoint
+ * @returns {number} La longueur du vecteur en pixels
+**/
+
 function getVectorLengthInPixels(startPoint, endPoint) {
     let pixelStart = map.latLngToContainerPoint(startPoint);
     let pixelEnd = map.latLngToContainerPoint(endPoint);
@@ -116,9 +123,8 @@ function updateScaleFromVector(vectorStart, vectorEnd,vectorEndReal) {
 
 function metersToLatLon(lat, lon, deltaE, deltaN) {
     const earthRadius = 6371000; // Rayon de la Terre en mètres
-    const deltaLat = (deltaN) / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
-    const deltaLon = (deltaE) / (earthRadius * Math.cos(Math.PI * lat / 180)) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
-
+    const deltaLat = deltaN / earthRadius * (180 / Math.PI); // Conversion des mètres à des degrés de latitude
+    const deltaLon =(deltaE / (earthRadius *  Math.cos(lat * Math.PI / 180))) * (180 / Math.PI); // Conversion des mètres à des degrés de longitude
     return {
         lat: lat + deltaLat,
         lon: lon + deltaLon
@@ -186,14 +192,15 @@ function updateVectors(dateIndex, periodIndex) {
         let startPoint = [position.lat, position.lon];
         let endPoint = metersToLatLon(startPoint[0], startPoint[1], vector[0]*1000*scaleSlider.value*10000, vector[1]*1000*scaleSlider.value*10000);
 
-        if (!firstVectorStart) {
-            firstVectorStart = startPoint;
-            firstVectorEndReal = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
-            firstVectorEnd = endPoint;
-        }
+     
+        firstVectorStart = startPoint;
+        firstVectorEndReal = metersToLatLon(startPoint[0], startPoint[1], vector[0], vector[1]);
+        firstVectorEnd = endPoint;
+      
     
         // 🔴 Ajouter le vecteur horizontal
-        L.polyline([startPoint, endPoint], { color: "red" }).addTo(vectorLayer).arrowheads();
+        L.polyline([startPoint, endPoint], { color: "red" }).arrowheads({yawn: 40,fill: true}).addTo(vectorLayer);
+
 
         // 🔵 Ajouter une ellipse d'erreur pour la composante horizontale
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
@@ -207,7 +214,7 @@ function updateVectors(dateIndex, periodIndex) {
 
         // ✅ Ajouter le vecteur vertical
         let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*10000);
-        L.polyline([startPoint, verticalEndPoint], { color: "green" }).addTo(verticalVectorLayer).arrowheads();
+        L.polyline([startPoint, verticalEndPoint], { color: "green" }).arrowheads({yawn: 40,fill: true}).addTo(verticalVectorLayer);
 
 
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
@@ -226,13 +233,11 @@ function updateVectors(dateIndex, periodIndex) {
                 <b>Code:</b> ${stationInfo.code}<br>
                 <b>URL:</b> <a href="${stationInfo.url}" target="_blank">${stationInfo.url}</a>
             `);
-    }
-    // Mise à jour de l'échelle
-    if (firstVectorStart && firstVectorEnd) {
         updateScaleFromVector(firstVectorStart, firstVectorEnd, firstVectorEndReal);
-    } else {
-        updateScaleFromVector(null, null,null); // Masquer l'échelle si aucun vecteur
     }
+    updateScaleFromVector(firstVectorStart, firstVectorEnd, firstVectorEndReal);
+
+    
 }
 
 let toggleHorizontalButton = document.getElementById("toggleHorizontal");
@@ -243,7 +248,6 @@ toggleHorizontalButton.addEventListener("click", function(){
       toggleHorizontalButton.textContent = "Show horizontal vectors";
     } else {
       map.addLayer(vectorLayer);
-      map.addLayer(stationMarkers);
       map.addLayer(errorLayer);
       toggleHorizontalButton.textContent = "Hide horizontal vectors";
     }
@@ -258,6 +262,7 @@ toggleVerticalButton.addEventListener("click", function(){
     } else {
         map.addLayer(verticalVectorLayer);
         map.addLayer(verticalErrorLayer); // Afficher également l'erreur verticale
+        toggleVerticalButton.textContent = "Hide vertical vectors";
     }
 });
         // 📌 Gestion des sliders
@@ -279,6 +284,28 @@ map.on('zoomend', function () {
     updateVectors(dateSlider.value,periodSlider.value);
   
 });
+
+// 📌 Création d'une légende
+function createLegend() {
+    let legend = L.control({ position: 'topright' });
+
+    legend.onAdd = function () {
+        let div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML = `
+            <b>Legende</b><br>
+            <i style="background-color: red; width: 10px; height: 10px; display: inline-block; border-radius: 50%;"></i> Horizontal<br>
+            <i style="background-color: green; width: 10px; height: 10px; display: inline-block; border-radius: 50%;"></i> Vertical<br>
+            <i style="border: 2px solid black; width: 8px; height: 8px; display: inline-block; border-radius: 50%;"></i> Station<br>
+        `;
+        return div;
+    };
+
+    legend.addTo(map);
+}
+
+// 📌 Appeler la fonction pour ajouter la légende
+createLegend();
+
 
 
 // 📌 Charger les données au démarrage
