@@ -231,7 +231,7 @@ function updateVectors(dateIndex, periodIndex) {
       
     
         // 🔴 Ajouter le vecteur horizontal
-        L.polyline([startPoint, endPoint], { color: couleur_horizontale }).addTo(vectorLayer).arrowheads();
+        L.polyline([startPoint, endPoint], { color: couleur_horizontale }).arrowheads().addTo(vectorLayer);
 
         // 🔵 Ajouter une ellipse d'erreur pour la composante horizontale
         let errorRadiusX = Math.sqrt(error[0] ** 2); // Rayon de l'ellipse sur l'axe X
@@ -249,7 +249,7 @@ function updateVectors(dateIndex, periodIndex) {
 
         // ✅ Ajouter le vecteur vertical
         let verticalEndPoint = metersToLatLon(startPoint[0], startPoint[1], 0, vector[2]*1000*scaleSlider.value*Facteur_echelle);
-        L.polyline([startPoint, verticalEndPoint], { color: couleur_verticale }).addTo(verticalVectorLayer).arrowheads();
+        L.polyline([startPoint, verticalEndPoint], { color: couleur_verticale }).arrowheads().addTo(verticalVectorLayer);
 
 
         // 🔵 Ajouter un cercle d'erreur pour la composante verticale
