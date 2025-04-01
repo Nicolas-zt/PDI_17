@@ -2,13 +2,12 @@
 
 ## Description
 
-Ce projet a pour but de proposer une représentation dynamique de vecteurs de déformations GNSS dans les 4 volcans français.
-Cette solution est déstinée à être implémentée dans le logiciel WebObs développé par l'Institut de Physique du Globe de Paris dont l'utilisation est exclusivement privée.
+This project aims at proposing a dynamic representation of GNSS deformation vectors about the 4 french volcanos.
+This solution is meant to be implemented in the WebObs software developed by the Institut de physique du globe de Paris  and which use is exclusively private.
 
 ## Installation
 
-L'une des contraintes de cette solution est de pouvoir fonctionner sans internet c'est pourquoi l'ensemble des librairies utilisées sont téléchargées dans le sous-dossier leaflet présent sur le github.
-Seules les tuiles de fond de carte nécessitent une connexion internet mais peuvent être changées facilement à la ligne 10 du JavaScript (Modifier également la ligne 11 renseignant les sources des tuiles utilisées).
+One of the restraints of this application is to be able to be used without any internet connection. That is why all the libraries used are downloaded is the sub-folder named "leaflet" within the github.
+Only the tiles used for the map need an internet connection but it can be changed easily at the line 10 of the JavaScript file (Also modify the line 11 concerning the sources of the used tiles).
 
-La version 7.4.1 de PHP a été utilisée durant le développement de cette solution, cependant PERL peut également être utilisé à condition de changer l'extension du fichier renseigné à la ligne 56 du JavaScript.
-
+The 7.4.1 version of PHP was used during the development of the application, however PERL can also be used by changing the file's name at the line 56 of the JavaScript file.
