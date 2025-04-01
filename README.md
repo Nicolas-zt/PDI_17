@@ -1,9 +1,9 @@
-# PDI_17
+# README
 
 ## Description
 
 This project aims at proposing a dynamic representation of GNSS deformation vectors about the 4 french volcanos.
-This solution is meant to be implemented in the WebObs software developed by the Institut de physique du globe de Paris  and which use is exclusively private.
+This solution is meant to be implemented in the WebObs software developed by the Institut de physique du globe de Paris and which use is exclusively private.
 
 ## Installation
 
