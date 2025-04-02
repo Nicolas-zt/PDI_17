@@ -19,7 +19,7 @@ Start by cloning the repository to your machine using a Git Bash terminal with t
 
 git clone https://github.com/Nicolas-zt/PDI_17.git
 
-Repository Structure
+## Repository Structure
 
 The PDI_17 repository contains two main folders:
 
@@ -27,7 +27,7 @@ Codes: contains all the necessary project files (.js, .css, .pl, .php).
 
 Fichiers_stations: contains GNSS station observation data.
 
-Installing a Local Server
+## Installing a Local Server
 To run the project locally, you need to install a local server such as MAMP.
 
 Steps:
@@ -42,7 +42,7 @@ Go to MAMP > Preferences > Server.
 
 Change the server path to point to the Codes folder inside the cloned repository.
 
-Launching the Project
+## Launching the Project
 Once the configuration is complete:
 
 Open your browser.
