@@ -2,35 +2,41 @@
 
 ## Description
 
-This project aims at proposing a dynamic representation of GNSS deformation vectors about the 4 french volcanos.
-This solution is meant to be implemented in the WebObs software developed by the Institut de physique du globe de Paris and which use is exclusively private.
+This project aims to provide a dynamic representation of GNSS deformation vectors for the four main French volcanoes.  
+It is designed to be integrated into the **WebObs** software developed by the *Institut de Physique du Globe de Paris*, and its use is strictly private.
 
 ## Installation
 
-One of the restraints of this application is to be able to be used without any internet connection. That is why all the libraries used are downloaded is the sub-folder named "leaflet" within the github.
-Only the tiles used for the map need an internet connection but it can be changed easily at the line 10 of the JavaScript file (Also modify the line 11 concerning the sources of the used tiles).
+One of the constraints of this application is that it must work **without any internet connection**.  
+For this reason, all required libraries are included in a sub-folder named `leaflet` within the repository.  
+Only the map tiles require an internet connection, but this can easily be changed by editing:
 
-The 7.4.1 version of PHP was used during the development of the application, however PERL can also be used by changing the file's name at the line 56 of the JavaScript file.
+- **Line 10** of the JavaScript file (tile server URL)
+- **Line 11** (tile source attribution)
+
+> **Note:** The application was developed using **PHP version 7.4.1**,  
+
+> but it can also be run using **Perl** by changing the script file name at **line 56** of the JavaScript file.
 
 ## User Guide – Running the Project Locally
 
-Cloning the Git Repository
+### Cloning the Git Repository
+
 Start by cloning the repository to your machine using a Git Bash terminal with the following command:
 
 git clone https://github.com/Nicolas-zt/PDI_17.git
 
-Repository Structure
+
+## Repository Structure
 
 The PDI_17 repository contains two main folders:
 
 Codes: contains all the necessary project files (.js, .css, .pl, .php).
 
-Fichiers_stations: contains GNSS station observation data.
+files_stations: contains GNSS station observation data.
 
-Installing a Local Server
+## Installing a Local Server
 To run the project locally, you need to install a local server such as MAMP.
-
-Steps:
 
 Go to the official website: https://www.mamp.info/en/downloads/
 
@@ -42,7 +48,7 @@ Go to MAMP > Preferences > Server.
 
 Change the server path to point to the Codes folder inside the cloned repository.
 
-Launching the Project
+## Launching the Project
 Once the configuration is complete:
 
 Open your browser.
